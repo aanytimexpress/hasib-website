@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 40%, #f8fafc 100%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.prose-bn {
+  @apply leading-8 text-slate-700;
+}
+
+.prose-bn h1,
+.prose-bn h2,
+.prose-bn h3 {
+  @apply text-slate-900;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
