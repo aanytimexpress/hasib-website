@@ -14,6 +14,7 @@ interface AuthState {
   signUp: (
     payload: { email: string; password: string; fullName: string }
   ) => Promise<{ error?: string; message?: string }>;
+  resendSignupVerification: (email: string) => Promise<{ error?: string; message?: string }>;
   requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
   updatePassword: (password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -99,6 +100,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     return { message: "Account created. Check your email to verify, then sign in." };
+  },
+  resendSignupVerification: async (email) => {
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined;
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: redirectTo ? { emailRedirectTo: redirectTo } : undefined
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { message: "Verification email sent again. Check inbox/spam." };
   },
   requestPasswordReset: async (email) => {
     const redirectTo =

@@ -56,6 +56,7 @@ function createDemoClient() {
       getUser: async () => ({ data: { user: null }, error: null }),
       signInWithPassword: async () => ({ data: { user: null, session: null }, error: demoAuthError }),
       signUp: async () => ({ data: { user: null, session: null }, error: demoAuthError }),
+      resend: async () => ({ data: {}, error: demoAuthError }),
       resetPasswordForEmail: async () => ({ data: {}, error: demoAuthError }),
       updateUser: async () => ({ data: { user: null }, error: demoAuthError }),
       setSession: async () => ({ data: { session: null, user: null }, error: demoAuthError }),

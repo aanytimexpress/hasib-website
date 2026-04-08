@@ -6,7 +6,7 @@ const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
 
 export default function AdminSignupPage() {
   const navigate = useNavigate();
-  const { signUp, session, role } = useAuth();
+  const { signUp, resendSignupVerification, session, role } = useAuth();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -16,6 +16,8 @@ export default function AdminSignupPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
 
   useEffect(() => {
     if (session && role && ADMIN_ROLES.has(role)) {
@@ -59,6 +61,27 @@ export default function AdminSignupPage() {
     }
 
     setNotice(result.message || "Signup completed. You can now sign in.");
+    setPendingVerificationEmail(form.email.trim().toLowerCase());
+  };
+
+  const onResendVerification = async () => {
+    if (!pendingVerificationEmail) {
+      setError("Email not found. Please submit signup form first.");
+      return;
+    }
+
+    setError("");
+    setNotice("");
+    setResendLoading(true);
+    const result = await resendSignupVerification(pendingVerificationEmail);
+    setResendLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setNotice(result.message || "Verification email sent.");
   };
 
   return (
@@ -116,6 +139,16 @@ export default function AdminSignupPage() {
         >
           Back to login
         </Link>
+        {pendingVerificationEmail ? (
+          <button
+            type="button"
+            onClick={() => void onResendVerification()}
+            disabled={resendLoading}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-70"
+          >
+            {resendLoading ? "Resending..." : "Resend verification email"}
+          </button>
+        ) : null}
         {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
       </form>
