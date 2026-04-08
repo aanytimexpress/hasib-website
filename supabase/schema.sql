@@ -399,6 +399,84 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_auth_user();
 
+create or replace function public.ensure_current_user_profile()
+returns table(profile_id uuid, role_name text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_auth_id uuid := auth.uid();
+  auth_email text;
+  auth_full_name text;
+  selected_role_name text := 'user';
+  selected_role_id uuid;
+begin
+  if current_auth_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select
+    lower(coalesce(au.email, concat(au.id, '@example.com'))),
+    coalesce(au.raw_user_meta_data ->> 'full_name', split_part(coalesce(au.email, 'user'), '@', 1))
+  into auth_email, auth_full_name
+  from auth.users au
+  where au.id = current_auth_id
+  limit 1;
+
+  if auth_email is null then
+    raise exception 'Authenticated user record not found';
+  end if;
+
+  if public.is_admin_allowlist_email(auth_email) then
+    selected_role_name := 'super_admin';
+  end if;
+
+  select id into selected_role_id
+  from public.roles
+  where name = selected_role_name
+  limit 1;
+
+  if selected_role_id is null then
+    raise exception 'Role % not found', selected_role_name;
+  end if;
+
+  insert into public.users (auth_user_id, email, full_name, role_id, location)
+  values (
+    current_auth_id,
+    auth_email,
+    auth_full_name,
+    selected_role_id,
+    'Bogura, Bangladesh'
+  )
+  on conflict (auth_user_id) do update
+  set
+    email = excluded.email,
+    full_name = excluded.full_name,
+    role_id = case
+      when public.is_admin_allowlist_email(excluded.email) then
+        (select id from public.roles where name = 'super_admin' limit 1)
+      when (
+        select r.name
+        from public.roles r
+        where r.id = public.users.role_id
+      ) in ('super_admin', 'editor', 'moderator') then
+        (select id from public.roles where name = 'user' limit 1)
+      else public.users.role_id
+    end,
+    updated_at = now();
+
+  return query
+  select u.id, r.name
+  from public.users u
+  join public.roles r on r.id = u.role_id
+  where u.auth_user_id = current_auth_id
+  limit 1;
+end;
+$$;
+
+grant execute on function public.ensure_current_user_profile() to authenticated;
+
 create or replace function public.publish_scheduled_posts()
 returns integer
 language plpgsql

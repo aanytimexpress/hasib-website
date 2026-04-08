@@ -97,19 +97,23 @@ export default function ResetPasswordPage() {
     }
 
     setSaving(true);
-    const result = await updatePassword(form.password);
-    if (result.error) {
-      setSaving(false);
-      setError(result.error);
-      return;
-    }
+    try {
+      const result = await updatePassword(form.password);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
 
-    await signOut();
-    setSaving(false);
-    setNotice("Password updated successfully. Please sign in again.");
-    window.setTimeout(() => {
-      navigate("/admin/login");
-    }, 1200);
+      await signOut();
+      setNotice("Password updated successfully. Please sign in again.");
+      window.setTimeout(() => {
+        navigate("/admin/login");
+      }, 1200);
+    } catch (submitError) {
+      setError(getErrorMessage(submitError));
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading || recoveryLoading) {

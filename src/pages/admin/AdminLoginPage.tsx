@@ -8,12 +8,13 @@ const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, requestPasswordReset, signOut, session, role } = useAuth();
+  const { signIn, requestPasswordReset, repairProfile, signOut, session, role } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
 
   useEffect(() => {
     // Prevent login/admin redirect loop when a session exists but CMS role is missing.
@@ -61,6 +62,21 @@ export default function AdminLoginPage() {
     setNotice(result.message || "Password reset link sent.");
   };
 
+  const onRetryRoleSync = async () => {
+    setError("");
+    setNotice("");
+    setSyncLoading(true);
+    const result = await repairProfile();
+    setSyncLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setNotice(result.message || "Profile synced. Please sign in again.");
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 to-teal-50 p-4 font-bengali">
       <form
@@ -74,9 +90,16 @@ export default function AdminLoginPage() {
         {session && !role ? (
           <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             <p>
-              This account is authenticated, but no CMS role is assigned. Contact Super Admin, then sign
-              in again.
+              This account is authenticated, but no CMS role is assigned yet.
             </p>
+            <button
+              type="button"
+              onClick={() => void onRetryRoleSync()}
+              disabled={syncLoading}
+              className="w-full rounded-lg border border-amber-300 bg-white px-4 py-2 font-semibold text-amber-900 disabled:opacity-70"
+            >
+              {syncLoading ? "Syncing role..." : "Retry role sync"}
+            </button>
             <button
               type="button"
               onClick={() => void signOut()}

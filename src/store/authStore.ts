@@ -18,6 +18,7 @@ interface AuthState {
   resendSignupVerification: (email: string) => Promise<{ error?: string; message?: string }>;
   requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
   updatePassword: (password: string) => Promise<{ error?: string }>;
+  repairProfile: () => Promise<{ error?: string; message?: string }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -39,6 +40,72 @@ async function fetchProfile(authUserId: string): Promise<{ profile: UserProfile 
   };
 }
 
+function toErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "string" && error.trim()) return error;
+  return fallback;
+}
+
+async function ensureCurrentUserProfile(session: Session): Promise<{ error?: string }> {
+  const email = session.user.email?.trim().toLowerCase();
+  if (!email) {
+    return { error: "Authenticated user email is missing." };
+  }
+
+  const { error: rpcError } = await supabase.rpc("ensure_current_user_profile");
+  if (!rpcError) {
+    return {};
+  }
+
+  const expectedRole = isAllowlistedAdminEmail(email) ? "super_admin" : "user";
+  const { data: roleData, error: roleError } = await supabase
+    .from("roles")
+    .select("id")
+    .eq("name", expectedRole)
+    .maybeSingle();
+
+  if (roleError || !roleData?.id) {
+    return { error: rpcError.message || roleError?.message || "Failed to resolve role." };
+  }
+
+  const fullName =
+    (session.user.user_metadata?.full_name as string | undefined)?.trim() ||
+    email.split("@")[0] ||
+    "User";
+  const { error: upsertError } = await supabase.from("users").upsert(
+    {
+      auth_user_id: session.user.id,
+      email,
+      full_name: fullName,
+      role_id: roleData.id
+    },
+    { onConflict: "auth_user_id" }
+  );
+
+  if (upsertError) {
+    return { error: rpcError.message || upsertError.message };
+  }
+
+  return {};
+}
+
+async function loadProfileForSession(
+  session: Session
+): Promise<{ profile: UserProfile | null; role: RoleName | null; repairError?: string }> {
+  let result = await fetchProfile(session.user.id);
+  if (result.profile || result.role) {
+    return result;
+  }
+
+  const repair = await ensureCurrentUserProfile(session);
+  if (repair.error) {
+    return { ...result, repairError: repair.error };
+  }
+
+  result = await fetchProfile(session.user.id);
+  return result;
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   loading: true,
   initialized: false,
@@ -54,7 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } = await supabase.auth.getSession();
 
     if (session?.user) {
-      const { profile, role } = await fetchProfile(session.user.id);
+      const { profile, role } = await loadProfileForSession(session);
       set({ session, profile, role, loading: false, initialized: true });
     } else {
       set({ session: null, profile: null, role: null, loading: false, initialized: true });
@@ -62,7 +129,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (newSession?.user) {
-        const { profile, role } = await fetchProfile(newSession.user.id);
+        const { profile, role } = await loadProfileForSession(newSession);
         set({ session: newSession, profile, role, loading: false, initialized: true });
       } else {
         set({ session: null, profile: null, role: null, loading: false, initialized: true });
@@ -71,53 +138,58 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   signIn: async (email, password) => {
     const normalizedEmail = email.trim().toLowerCase();
-    const signInResult = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+    try {
+      const signInResult = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
 
-    if (!signInResult.error) {
-      await get().refreshProfile();
-      return {};
-    }
+      if (!signInResult.error) {
+        await get().refreshProfile();
+        return {};
+      }
 
-    const errorMessage = signInResult.error.message || "Login failed.";
-    const isInvalidCredentials =
-      errorMessage.toLowerCase().includes("invalid login credentials") ||
-      errorMessage.toLowerCase().includes("invalid credentials");
+      const errorMessage = signInResult.error.message || "Login failed.";
+      const isInvalidCredentials =
+        errorMessage.toLowerCase().includes("invalid login credentials") ||
+        errorMessage.toLowerCase().includes("invalid credentials");
 
-    // For allowlisted admin emails, auto-provision first login to keep setup simple.
-    if (isAllowlistedAdminEmail(normalizedEmail) && isInvalidCredentials) {
-      const fullName = normalizedEmail.split("@")[0] || "Admin User";
-      const signUpResult = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          },
-          emailRedirectTo:
-            typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined
+      // For allowlisted admin emails, auto-provision first login to keep setup simple.
+      if (isAllowlistedAdminEmail(normalizedEmail) && isInvalidCredentials) {
+        const fullName = normalizedEmail.split("@")[0] || "Admin User";
+        const signUpResult = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            data: {
+              full_name: fullName
+            },
+            emailRedirectTo:
+              typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined
+          }
+        });
+
+        if (signUpResult.error) {
+          return { error: signUpResult.error.message };
         }
-      });
 
-      if (signUpResult.error) {
-        return { error: signUpResult.error.message };
+        const retrySignIn = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+        if (retrySignIn.error) {
+          return { error: retrySignIn.error.message };
+        }
+
+        await get().refreshProfile();
+        return { message: "Admin account created and signed in." };
       }
 
-      const retrySignIn = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-      if (retrySignIn.error) {
-        return { error: retrySignIn.error.message };
-      }
-
-      await get().refreshProfile();
-      return { message: "Admin account created and signed in." };
+      return { error: errorMessage };
+    } catch (error) {
+      return { error: toErrorMessage(error, "Login failed. Please try again.") };
     }
-
-    return { error: errorMessage };
   },
   signUp: async ({ email, password, fullName }) => {
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined;
+    const normalizedEmail = email.trim().toLowerCase();
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
@@ -156,8 +228,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   requestPasswordReset: async (email) => {
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/admin/reset-password` : undefined;
+    const normalizedEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.resetPasswordForEmail(
-      email,
+      normalizedEmail,
       redirectTo ? { redirectTo } : undefined
     );
     if (error) {
@@ -166,12 +239,40 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return { message: "Password reset link sent. Check your email inbox." };
   },
   updatePassword: async (password) => {
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      return { error: error.message };
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        return { error: error.message };
+      }
+      await get().refreshProfile();
+      return {};
+    } catch (error) {
+      return { error: toErrorMessage(error, "Password update failed. Please try again.") };
     }
-    await get().refreshProfile();
-    return {};
+  },
+  repairProfile: async () => {
+    try {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        return { error: "No active session found. Please sign in again." };
+      }
+
+      const repair = await ensureCurrentUserProfile(session);
+      await get().refreshProfile();
+      const currentRole = get().role;
+      if (currentRole) {
+        return { message: `Role synced successfully: ${currentRole}.` };
+      }
+      if (repair.error) {
+        return { error: repair.error };
+      }
+      return { error: "Profile is still missing. Run SQL patch once, then sign in again." };
+    } catch (error) {
+      return { error: toErrorMessage(error, "Could not sync profile right now.") };
+    }
   },
   signOut: async () => {
     await supabase.auth.signOut();
@@ -183,7 +284,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } = await supabase.auth.getSession();
 
     if (session?.user) {
-      const { profile, role } = await fetchProfile(session.user.id);
+      const { profile, role } = await loadProfileForSession(session);
       set({ session, profile, role });
     } else {
       set({ session: null, profile: null, role: null });
