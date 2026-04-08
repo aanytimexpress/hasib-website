@@ -7,7 +7,7 @@ const navItems = [
   { label: "হোম", path: "/" },
   { label: "পরিচিতি", path: "/about" },
   { label: "ব্লগ", path: "/blog" },
-  { label: "স্মৃতি", path: "/memories" },
+  { label: "স্মৃতি", path: "/blog" },
   { label: "গ্যালারি", path: "/gallery" },
   { label: "টাইমলাইন", path: "/timeline" },
   { label: "যোগাযোগ", path: "/contact" }

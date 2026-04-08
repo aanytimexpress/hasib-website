@@ -48,11 +48,10 @@ export function AppRoutes() {
           <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/signup" element={<AdminSignupPage />} />
+          <Route path="/admin/reset-password" element={<ResetPasswordPage />} />
         </Route>
-
-        <Route path="/admin/login" element={<AdminLoginPage />} />
-        <Route path="/admin/signup" element={<AdminSignupPage />} />
-        <Route path="/admin/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
           <Route element={<AdminLayout />}>

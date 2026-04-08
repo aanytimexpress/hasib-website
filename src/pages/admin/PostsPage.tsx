@@ -182,17 +182,15 @@ export default function PostsPage() {
     setSaving(true);
 
     const nextSlug = form.slug || slugify(form.title);
-    const scheduledISO = form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null;
+    const currentPost = editingId ? posts.find((item) => item.id === editingId) : null;
+    const scheduledISO =
+      form.status === "scheduled" && form.scheduled_at ? new Date(form.scheduled_at).toISOString() : null;
     const now = new Date().toISOString();
 
     let status = form.status;
     if (status === "scheduled" && !scheduledISO) {
       status = "draft";
     }
-    if (scheduledISO && new Date(scheduledISO).getTime() > Date.now() && status === "published") {
-      status = "scheduled";
-    }
-
     const payload = {
       title: form.title,
       slug: nextSlug,
@@ -204,7 +202,7 @@ export default function PostsPage() {
       allow_comments: form.allow_comments,
       cover_image_url: form.cover_image_url || null,
       scheduled_at: status === "scheduled" ? scheduledISO : null,
-      published_at: status === "published" ? now : null,
+      published_at: status === "published" ? currentPost?.published_at || now : null,
       reading_minutes: form.reading_minutes || calculateReadingTime(form.content),
       author_id: profile?.id || null
     };
@@ -376,6 +374,14 @@ export default function PostsPage() {
                     >
                       Delete
                     </button>
+                    <a
+                      href={`/blog/${post.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded bg-brand-50 px-2 py-1 text-xs text-brand-700 hover:bg-brand-100"
+                    >
+                      View
+                    </a>
                   </div>
                 </div>
               ))}
@@ -457,7 +463,13 @@ export default function PostsPage() {
                 <label className="mb-1 block text-sm font-semibold text-slate-700">Status</label>
                 <select
                   value={form.status}
-                  onChange={(event) => updateField("status", event.target.value as Post["status"])}
+                  onChange={(event) => {
+                    const nextStatus = event.target.value as Post["status"];
+                    updateField("status", nextStatus);
+                    if (nextStatus !== "scheduled") {
+                      updateField("scheduled_at", "");
+                    }
+                  }}
                   className="w-full rounded-lg border border-slate-300 p-2"
                 >
                   <option value="draft">Draft</option>
@@ -465,6 +477,9 @@ export default function PostsPage() {
                   <option value="scheduled">Scheduled</option>
                   <option value="archived">Archived</option>
                 </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  Published করলে post সঙ্গে সঙ্গে site-এ show করবে।
+                </p>
               </div>
 
               <div>
