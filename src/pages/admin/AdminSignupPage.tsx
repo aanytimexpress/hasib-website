@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
+const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
+
 export default function AdminSignupPage() {
   const navigate = useNavigate();
   const { signUp, session, role } = useAuth();
@@ -16,8 +18,12 @@ export default function AdminSignupPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session && role) {
+    if (session && role && ADMIN_ROLES.has(role)) {
       navigate("/admin");
+      return;
+    }
+    if (session && role === "user") {
+      navigate("/");
     }
   }, [session, role, navigate]);
 
@@ -63,8 +69,7 @@ export default function AdminSignupPage() {
       >
         <h1 className="text-2xl font-bold text-slate-900">Create Account</h1>
         <p className="text-sm text-slate-600">
-          If signup is disabled in Supabase Auth, this page will return an error. In that case, use a
-          Super Admin account to create users from Admin panel.
+          Only allowlisted emails become admin. All other registrations are created as normal users.
         </p>
         <input
           type="text"

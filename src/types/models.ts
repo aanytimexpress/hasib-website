@@ -1,4 +1,4 @@
-export type RoleName = "super_admin" | "editor" | "moderator";
+export type RoleName = "super_admin" | "editor" | "moderator" | "user";
 
 export type PostStatus = "draft" | "scheduled" | "published" | "archived";
 

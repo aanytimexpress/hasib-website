@@ -25,7 +25,7 @@ export function ProtectedRoute({ roles }: ProtectedRouteProps) {
 
   if (roles && roles.length > 0 && !hasAnyRole(role, roles)) {
     if (role) {
-      return <Navigate to="/admin" replace />;
+      return <Navigate to="/" replace />;
     }
     return <Navigate to="/admin/login" replace />;
   }

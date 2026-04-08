@@ -58,11 +58,20 @@ Deno.serve(async (req) => {
   const email = (body?.email as string | undefined)?.trim().toLowerCase();
   const password = (body?.password as string | undefined)?.trim();
   const fullName = (body?.full_name as string | undefined)?.trim() || "New User";
-  const roleName = (body?.role as string | undefined) || "editor";
+  const roleName = (body?.role as string | undefined) || "user";
+  const adminAllowlist = new Set(["aanytime.xpress@gmail.com", "alshakib730@gmail.com"]);
+  const adminRoles = new Set(["super_admin", "editor", "moderator"]);
 
   if (!email || !password) {
     return new Response(JSON.stringify({ error: "Email and password are required." }), {
       status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+
+  if (adminRoles.has(roleName) && !adminAllowlist.has(email)) {
+    return new Response(JSON.stringify({ error: "Only allowlisted emails can be assigned admin roles." }), {
+      status: 403,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }

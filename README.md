@@ -95,7 +95,7 @@ Production-ready Bengali personal publishing CMS with a dynamic public site and 
   - super_admin = full CMS
   - editor = posts + related media
   - moderator = comments moderation
-- Public signup intended to be disabled in Supabase Auth settings
+- Public signup enabled for normal users; admin roles are restricted by allowlist
 - HTML sanitization for rendered content
 - Storage policies locked to editor/admin roles for write actions
 
@@ -213,13 +213,14 @@ supabase secrets set OPENAI_API_KEY=...
 supabase secrets set OPENAI_MODEL=gpt-5.4-mini
 ```
 
-### 5. Disable public signup
+### 5. Configure public signup
 
 In Supabase Dashboard:
 
 1. Authentication -> Providers
-2. Turn off public email signups
-3. Keep only admin-created accounts
+2. Keep public email signup ON (normal users can register)
+3. Keep email confirmation ON
+4. Admin roles stay restricted by DB allowlist trigger
 
 ### 6. Run app
 
@@ -299,6 +300,10 @@ If OpenAI is unavailable, the app uses local fallback logic.
 
 - Login/Signup/Reset needs valid `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 - In Vercel (or other host), set all `VITE_*` variables for Production and Preview.
+- Admin email allowlist is enforced in DB trigger:
+  - `aanytime.xpress@gmail.com`
+  - `alshakib730@gmail.com`
+- These two emails can hold admin roles (`super_admin`/`editor`/`moderator`); all other registrations are forced to `user`.
 - In Supabase Auth URL Configuration:
   - `Site URL`: your production frontend URL
   - Add redirect URLs:
@@ -306,11 +311,12 @@ If OpenAI is unavailable, the app uses local fallback logic.
     - `https://your-domain.com/admin/reset-password`
     - `https://*.vercel.app/admin/login`
     - `https://*.vercel.app/admin/reset-password`
-- If public signup is disabled in Supabase, `/admin/signup` will show an error by design; use Super Admin user creation from dashboard.
+- If signup is disabled in Supabase, `/admin/signup` will fail by design; enable signup for normal-user registration.
 - First super admin setup:
   - Create first Auth user manually in Supabase
   - Run `supabase/schema.sql`
-  - Run `supabase/seed.sql` (promotes first auth user to super admin)
+  - Run `supabase/seed.sql` (promotes allowlisted admin emails to super admin)
+- For existing projects, run once: `supabase/admin_email_allowlist_patch.sql`
 
 ---
 
@@ -319,7 +325,7 @@ If OpenAI is unavailable, the app uses local fallback logic.
 - [ ] Create initial super admin in Supabase Auth
 - [ ] Run schema and seed SQL
 - [ ] Set edge function secrets
-- [ ] Disable public signup
+- [ ] Keep public signup enabled with email confirmation
 - [ ] Configure custom domain and canonical URLs in `seo_settings`
 - [ ] Test role permissions for all 3 roles
 - [ ] Connect backup and monitoring for Supabase project

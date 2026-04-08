@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
+const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
+
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,7 +16,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     // Prevent login/admin redirect loop when a session exists but CMS role is missing.
-    if (session && role) {
+    if (session && role && ADMIN_ROLES.has(role)) {
       navigate("/admin");
     }
   }, [session, role, navigate]);
@@ -77,6 +79,21 @@ export default function AdminLoginPage() {
             >
               Sign out
             </button>
+          </div>
+        ) : null}
+
+        {session && role === "user" ? (
+          <div className="space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+            <p>
+              You are logged in as a normal user account. Admin dashboard access is allowed only for approved
+              admin emails.
+            </p>
+            <Link
+              to="/"
+              className="block w-full rounded-lg border border-blue-300 bg-white px-4 py-2 text-center font-semibold text-blue-900"
+            >
+              Go to Home
+            </Link>
           </div>
         ) : null}
 

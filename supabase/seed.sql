@@ -1,24 +1,24 @@
 begin;
 
-with default_admin as (
-  select id, email
-  from auth.users
-  order by created_at
-  limit 1
+with admin_allowlist(email) as (
+  values
+    ('aanytime.xpress@gmail.com'),
+    ('alshakib730@gmail.com')
 ),
 super_admin_role as (
   select id from public.roles where name = 'super_admin' limit 1
 )
 insert into public.users (auth_user_id, email, full_name, location, language, bio, role_id)
 select
-  da.id,
-  da.email,
+  au.id,
+  au.email,
   'Hasibur Rahman',
   'Bogura, Bangladesh',
   array['Bangla', 'English'],
   'Personal writer and storyteller.',
   sar.id
-from default_admin da
+from auth.users au
+join admin_allowlist aa on lower(au.email) = aa.email
 cross join super_admin_role sar
 on conflict (auth_user_id)
 do update set

@@ -4,6 +4,9 @@ import { ModuleHeader } from "../../components/admin/ModuleHeader";
 import { Role, UserProfile } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 
+const ADMIN_EMAIL_ALLOWLIST = new Set(["aanytime.xpress@gmail.com", "alshakib730@gmail.com"]);
+const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
+
 export default function UsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -12,7 +15,7 @@ export default function UsersPage() {
     email: "",
     password: "",
     full_name: "",
-    role: "editor"
+    role: "user"
   });
 
   const load = async () => {
@@ -29,6 +32,19 @@ export default function UsersPage() {
   }, []);
 
   const updateRole = async (userId: string, roleId: string) => {
+    const user = users.find((item) => item.id === userId);
+    const role = roles.find((item) => item.id === roleId);
+
+    if (!user || !role) {
+      setMessage("User or role not found.");
+      return;
+    }
+
+    if (ADMIN_ROLES.has(role.name) && !ADMIN_EMAIL_ALLOWLIST.has(user.email.toLowerCase())) {
+      setMessage("Only allowlisted emails can be assigned admin roles.");
+      return;
+    }
+
     await supabase.from("users").update({ role_id: roleId }).eq("id", userId);
     await load();
   };
@@ -47,9 +63,16 @@ export default function UsersPage() {
 
   const createUser = async (event: FormEvent) => {
     event.preventDefault();
+    const email = newUser.email.trim().toLowerCase();
+
+    if (ADMIN_ROLES.has(newUser.role) && !ADMIN_EMAIL_ALLOWLIST.has(email)) {
+      setMessage("Only allowlisted emails can be created with admin roles.");
+      return;
+    }
+
     const { data, error } = await supabase.functions.invoke("admin-create-user", {
       body: {
-        email: newUser.email,
+        email,
         password: newUser.password,
         full_name: newUser.full_name,
         role: newUser.role
@@ -60,16 +83,20 @@ export default function UsersPage() {
       return;
     }
     setMessage(data?.message || "User created.");
-    setNewUser({ email: "", password: "", full_name: "", role: "editor" });
+    setNewUser({ email: "", password: "", full_name: "", role: "user" });
     await load();
   };
 
   return (
     <div className="space-y-5">
-      <ModuleHeader title="Users & Roles" description="Super admin can create users and assign roles." />
+      <ModuleHeader title="Users & Roles" description="Only allowlisted emails can hold admin roles." />
 
       <AdminCard className="space-y-3">
-        <h3 className="text-lg font-semibold text-slate-900">Create Admin User</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Create User</h3>
+        <p className="text-sm text-slate-600">
+          Admin allowlist: <span className="font-medium">aanytime.xpress@gmail.com</span>,{" "}
+          <span className="font-medium">alshakib730@gmail.com</span>
+        </p>
         <form className="grid gap-3 md:grid-cols-4" onSubmit={(event) => void createUser(event)}>
           <input
             required
@@ -102,9 +129,10 @@ export default function UsersPage() {
             <option value="super_admin">Super Admin</option>
             <option value="editor">Editor</option>
             <option value="moderator">Moderator</option>
+            <option value="user">User</option>
           </select>
           <button type="submit" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white md:col-span-4">
-            Create User (Admin-only)
+            Create User
           </button>
         </form>
       </AdminCard>
@@ -180,6 +208,7 @@ export default function UsersPage() {
         <p>Super Admin: Full access</p>
         <p>Editor: Posts and media focused access</p>
         <p>Moderator: Comments only access</p>
+        <p>User: Normal public account (no admin dashboard access)</p>
       </section>
 
       {message ? <p className="rounded-lg bg-white p-3 text-sm text-slate-700">{message}</p> : null}
