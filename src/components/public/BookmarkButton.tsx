@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck } from "lucide-react";
+﻿import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface BookmarkButtonProps {
@@ -32,10 +32,10 @@ export function BookmarkButton({ slug }: BookmarkButtonProps) {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-100"
+      className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-4 py-2 text-sm text-brand-800 transition hover:border-accent-300 hover:bg-white"
     >
       {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-      {saved ? "Saved" : "Bookmark"}
+      {saved ? "সংরক্ষিত" : "সংরক্ষণ"}
     </button>
   );
 }

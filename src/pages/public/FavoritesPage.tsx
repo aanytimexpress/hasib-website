@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Favorite, PageRecord } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
 
 const typeLabels: Record<Favorite["type"], string> = {
-  players: "Players",
-  teams: "Teams",
-  foods: "Foods",
-  books: "Books",
-  flowers: "Flowers",
-  places: "Places",
-  games: "Games",
-  colors: "Colors"
+  players: "খেলোয়াড়",
+  teams: "দল",
+  foods: "খাবার",
+  books: "বই",
+  flowers: "ফুল",
+  places: "স্থান",
+  games: "খেলা",
+  colors: "রঙ"
 };
 
 export default function FavoritesPage() {
@@ -39,36 +39,39 @@ export default function FavoritesPage() {
   }, [favorites]);
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h1 className="mb-2 text-3xl font-bold text-slate-900">{page?.title || "আমার পছন্দ"}</h1>
+    <div className="page-shell">
+      <section className="page-hero">
+        <p className="section-kicker">পছন্দের তালিকা</p>
+        <h1 className="section-title mt-4">{page?.title || "আমার পছন্দ"}</h1>
         <div
-          className="prose-bn"
+          className="prose-bn mt-4 max-w-3xl"
           dangerouslySetInnerHTML={{
             __html: sanitizeHtml(page?.content || "<p>ড্যাশবোর্ড থেকে এই অংশ সম্পাদনা করুন।</p>")
           }}
         />
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-5">
         {Object.entries(grouped).map(([type, items]) => (
-          <div key={type} className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h2 className="mb-3 text-xl font-semibold text-slate-900">
-              {typeLabels[type as Favorite["type"]] ?? type}
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div key={type} className="section-card">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="font-display text-2xl text-brand-900">{typeLabels[type as Favorite["type"]] ?? type}</h2>
+              <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-500">
+                {items.length} টি
+              </span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((item) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 p-3">
+                <div key={item.id} className="overflow-hidden rounded-[24px] border border-white/70 bg-white/82 shadow-sm">
                   {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="mb-2 h-36 w-full rounded-lg object-cover"
-                      loading="lazy"
-                    />
-                  ) : null}
-                  <p className="font-semibold text-slate-800">{item.title}</p>
-                  {item.description ? <p className="mt-1 text-sm text-slate-600">{item.description}</p> : null}
+                    <img src={item.image_url} alt={item.title} className="h-40 w-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="h-40 bg-hero-grid" />
+                  )}
+                  <div className="space-y-2 p-4">
+                    <p className="font-display text-2xl text-brand-900">{item.title}</p>
+                    {item.description ? <p className="text-sm leading-7 text-slate-600">{item.description}</p> : null}
+                  </div>
                 </div>
               ))}
             </div>

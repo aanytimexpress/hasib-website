@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
+import { Clock3 } from "lucide-react";
 import { PageRecord, TimelineEvent } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
@@ -21,27 +22,34 @@ export default function TimelinePage() {
   }, []);
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h1 className="mb-2 text-3xl font-bold text-slate-900">{page?.title || "জীবনের টাইমলাইন"}</h1>
-        <div
-          className="prose-bn"
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(page?.content || "<p>জীবনের উল্লেখযোগ্য ঘটনাগুলো এখানে যুক্ত করা হবে।</p>")
-          }}
-        />
+    <div className="page-shell">
+      <section className="page-hero">
+        <div className="space-y-4">
+          <p className="section-kicker">সময়ের রেখা</p>
+          <h1 className="section-title">জীবনের পথ ধরে সাজানো কিছু উল্লেখযোগ্য দিন</h1>
+          <div
+            className="prose-bn max-w-3xl"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(page?.content || "<p>জীবনের উল্লেখযোগ্য ঘটনা, উপলক্ষ আর মোড় ঘোরানো সময়গুলো এখানে সাজানো আছে।</p>")
+            }}
+          />
+        </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <div className="relative ml-2 border-l-2 border-brand-200 pl-6">
+      <section className="section-card">
+        <div className="relative ml-2 border-l-2 border-brand-200 pl-6 md:ml-4 md:pl-8">
           {timeline.map((item) => (
-            <article key={item.id} className="relative mb-6">
-              <span className="absolute -left-[34px] top-1 h-4 w-4 rounded-full border-2 border-brand-500 bg-white" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">{formatDate(item.event_date)}</p>
-              <h2 className="text-lg font-semibold text-slate-900">{item.title}</h2>
-              <p className="text-sm leading-7 text-slate-700">{item.description}</p>
+            <article key={item.id} className="relative mb-8 rounded-[26px] border border-brand-100 bg-white/85 p-5 shadow-sm">
+              <span className="absolute -left-[39px] top-6 h-4 w-4 rounded-full border-4 border-paper bg-accent-500 md:-left-[49px]" />
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">
+                <Clock3 size={14} />
+                {formatDate(item.event_date)}
+              </div>
+              <h2 className="mt-4 font-display text-3xl text-brand-900">{item.title}</h2>
+              <p className="mt-3 text-sm leading-8 text-slate-700">{item.description}</p>
             </article>
           ))}
+          {!timeline.length ? <p className="text-sm text-slate-500">এখানে এখনো কোনো timeline event যোগ করা হয়নি।</p> : null}
         </div>
       </section>
     </div>

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,12 @@
 
 :root {
   color-scheme: light;
+  --paper: #f8f1e7;
+  --paper-soft: rgba(255, 251, 245, 0.78);
+  --ink: #1f2f4b;
+  --muted-ink: #5f6f85;
+  --accent: #ab5728;
+  --line: rgba(52, 88, 135, 0.12);
 }
 
 * {
@@ -16,7 +22,30 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 40%, #f8fafc 100%);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(52, 88, 135, 0.16), transparent 26%),
+    radial-gradient(circle at top right, rgba(196, 109, 51, 0.1), transparent 22%),
+    linear-gradient(180deg, #fbf7f1 0%, #eef2f7 38%, #f6f1e8 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at center, black, transparent 88%);
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -24,14 +53,86 @@ a {
   text-decoration: none;
 }
 
+.font-display,
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Tiro Bangla", "Noto Serif Bengali", serif;
+  letter-spacing: -0.01em;
+}
+
 .prose-bn {
-  @apply leading-8 text-slate-700;
+  @apply leading-9 text-slate-700;
+  font-size: 1.04rem;
 }
 
 .prose-bn h1,
 .prose-bn h2,
 .prose-bn h3 {
-  @apply text-slate-900;
+  @apply mb-4 mt-8 text-slate-900;
+}
+
+.prose-bn p {
+  @apply my-4;
+}
+
+.prose-bn blockquote {
+  @apply rounded-[24px] border-l-4 border-accent-500 bg-white/80 px-5 py-4 text-brand-900 shadow-sm;
+}
+
+.prose-bn img {
+  @apply rounded-[24px] shadow-paper;
+}
+
+::selection {
+  background: rgba(171, 87, 40, 0.18);
+  color: #152238;
+}
+
+@layer components {
+  .page-shell {
+    @apply space-y-6 md:space-y-8;
+  }
+
+  .page-hero {
+    @apply relative overflow-hidden rounded-[34px] border border-white/70 bg-paper-grain p-6 shadow-paper backdrop-blur-xl md:p-8;
+  }
+
+  .page-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -8% -35% auto;
+    width: 220px;
+    height: 220px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(171, 87, 40, 0.14), transparent 70%);
+    pointer-events: none;
+  }
+
+  .section-card {
+    @apply rounded-[30px] border border-white/70 bg-white/70 p-5 shadow-paper backdrop-blur-xl md:p-6;
+  }
+
+  .section-kicker {
+    @apply inline-flex rounded-full border border-brand-200/70 bg-white/85 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-700;
+  }
+
+  .section-title {
+    @apply font-display text-3xl leading-tight text-brand-900 md:text-4xl;
+  }
+
+  .soft-input {
+    @apply w-full rounded-2xl border border-brand-100 bg-white/85 px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-accent-300 focus:ring-2 focus:ring-accent-100;
+  }
+
+  .soft-button {
+    @apply inline-flex items-center justify-center rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:-translate-y-0.5 hover:bg-brand-800;
+  }
+
+  .ghost-button {
+    @apply inline-flex items-center justify-center rounded-full border border-brand-200 bg-white/80 px-5 py-2.5 text-sm font-semibold text-brand-800 transition hover:border-brand-300 hover:bg-white;
+  }
 }
 
 .line-clamp-2 {

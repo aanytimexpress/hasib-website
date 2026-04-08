@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Post } from "../../types/models";
 
 interface FeaturedSliderProps {
@@ -11,11 +12,11 @@ export function FeaturedSlider({ posts }: FeaturedSliderProps) {
   return (
     <div className="overflow-x-auto pb-2">
       <div className="flex min-w-max gap-4">
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <Link
             to={`/blog/${post.slug}`}
             key={post.id}
-            className="group relative h-64 w-[290px] overflow-hidden rounded-2xl bg-slate-900"
+            className="group relative h-[22rem] w-[320px] overflow-hidden rounded-[30px] border border-white/30 bg-slate-900 shadow-[0_24px_52px_rgba(18,34,57,0.22)]"
           >
             {post.cover_image_url ? (
               <img
@@ -25,15 +26,19 @@ export function FeaturedSlider({ posts }: FeaturedSliderProps) {
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-brand-800 to-cyan-700" />
+              <div className="h-full w-full bg-gradient-to-br from-brand-800 via-brand-700 to-accent-600" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
-            <div className="absolute bottom-0 p-4">
-              <p className="mb-2 inline-flex rounded-full bg-white/20 px-2 py-1 text-xs text-white backdrop-blur">
-                Featured
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
+            <div className="absolute bottom-0 space-y-3 p-5">
+              <p className="inline-flex rounded-full bg-white/18 px-3 py-1 text-xs text-white backdrop-blur">
+                আলোচিত লেখা {String(index + 1).padStart(2, "0")}
               </p>
-              <h3 className="line-clamp-2 text-lg font-semibold text-white">{post.title}</h3>
-              {post.excerpt ? <p className="line-clamp-2 text-sm text-white/80">{post.excerpt}</p> : null}
+              <h3 className="font-display line-clamp-2 text-2xl leading-tight text-white">{post.title}</h3>
+              {post.excerpt ? <p className="line-clamp-2 text-sm leading-7 text-white/82">{post.excerpt}</p> : null}
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                পড়া শুরু করুন
+                <ArrowRight size={16} />
+              </span>
             </div>
           </Link>
         ))}
