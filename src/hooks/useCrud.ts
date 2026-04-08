@@ -35,7 +35,7 @@ export function useCrud<T extends { id: string }>(table: string, options?: CrudO
       return;
     }
 
-    const rows = (data ?? []) as T[];
+    const rows = ((data ?? []) as unknown[]) as T[];
     setItems(options?.transform ? options.transform(rows) : rows);
     setLoading(false);
   }, [table, select, options?.orderBy, options?.ascending, options?.filter, options?.transform]);

@@ -92,7 +92,7 @@ export default function PostsPage() {
       window.clearTimeout(autosaveRef.current);
     }
     autosaveRef.current = window.setTimeout(() => {
-      setDraft(draftKey, form as Partial<Post>);
+      setDraft(draftKey, form as unknown as Partial<Post>);
     }, 900);
     return () => {
       if (autosaveRef.current) {
@@ -101,7 +101,7 @@ export default function PostsPage() {
     };
   }, [form, draftKey, setDraft]);
 
-  const selectedDraft = autosaveDrafts[draftKey] as PostForm | undefined;
+  const selectedDraft = autosaveDrafts[draftKey] as unknown as PostForm | undefined;
 
   useEffect(() => {
     if (selectedDraft && !editingId) {
@@ -115,9 +115,9 @@ export default function PostsPage() {
       .from("post_tags")
       .select("tags(name)")
       .eq("post_id", post.id);
-    const tags = (postTagsData ?? [])
-      .map((item: { tags?: { name?: string } }) => item.tags?.name)
-      .filter(Boolean)
+    const tags = ((postTagsData ?? []) as Array<{ tags?: { name?: string } | Array<{ name?: string }> }>)
+      .flatMap((item) => (Array.isArray(item.tags) ? item.tags.map((tag) => tag?.name) : [item.tags?.name]))
+      .filter((name): name is string => Boolean(name))
       .join(", ");
     setForm({
       id: post.id,
