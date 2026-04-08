@@ -15,6 +15,7 @@ const ContactPage = lazy(() => import("../pages/public/ContactPage"));
 const SearchPage = lazy(() => import("../pages/public/SearchPage"));
 
 const AdminLoginPage = lazy(() => import("../pages/admin/AdminLoginPage"));
+const AdminSignupPage = lazy(() => import("../pages/admin/AdminSignupPage"));
 const ResetPasswordPage = lazy(() => import("../pages/admin/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("../pages/admin/DashboardPage"));
 const PostsPage = lazy(() => import("../pages/admin/PostsPage"));
@@ -50,6 +51,7 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/signup" element={<AdminSignupPage />} />
         <Route path="/admin/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>

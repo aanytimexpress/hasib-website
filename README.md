@@ -295,6 +295,25 @@ If OpenAI is unavailable, the app uses local fallback logic.
 
 ---
 
+## Admin Auth Troubleshooting
+
+- Login/Signup/Reset needs valid `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- In Vercel (or other host), set all `VITE_*` variables for Production and Preview.
+- In Supabase Auth URL Configuration:
+  - `Site URL`: your production frontend URL
+  - Add redirect URLs:
+    - `https://your-domain.com/admin/login`
+    - `https://your-domain.com/admin/reset-password`
+    - `https://*.vercel.app/admin/login`
+    - `https://*.vercel.app/admin/reset-password`
+- If public signup is disabled in Supabase, `/admin/signup` will show an error by design; use Super Admin user creation from dashboard.
+- First super admin setup:
+  - Create first Auth user manually in Supabase
+  - Run `supabase/schema.sql`
+  - Run `supabase/seed.sql` (promotes first auth user to super admin)
+
+---
+
 ## Production Checklist
 
 - [ ] Create initial super admin in Supabase Auth

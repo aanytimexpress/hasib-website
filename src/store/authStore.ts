@@ -11,6 +11,9 @@ interface AuthState {
   role: RoleName | null;
   initialize: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (
+    payload: { email: string; password: string; fullName: string }
+  ) => Promise<{ error?: string; message?: string }>;
   requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
   updatePassword: (password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -71,6 +74,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     await get().refreshProfile();
     return {};
+  },
+  signUp: async ({ email, password, fullName }) => {
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName
+        },
+        emailRedirectTo: redirectTo
+      }
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    if (data.session) {
+      await get().refreshProfile();
+      return { message: "Account created successfully. You are now signed in." };
+    }
+
+    return { message: "Account created. Check your email to verify, then sign in." };
   },
   requestPasswordReset: async (email) => {
     const redirectTo =

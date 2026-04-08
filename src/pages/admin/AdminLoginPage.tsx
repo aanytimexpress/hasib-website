@@ -1,11 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, requestPasswordReset, session } = useAuth();
+  const { signIn, requestPasswordReset, signOut, session, role } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -13,10 +13,11 @@ export default function AdminLoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
-    if (session) {
+    // Prevent login/admin redirect loop when a session exists but CMS role is missing.
+    if (session && role) {
       navigate("/admin");
     }
-  }, [session, navigate]);
+  }, [session, role, navigate]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +37,7 @@ export default function AdminLoginPage() {
   const onForgotPassword = async () => {
     if (!form.email.trim()) {
       setNotice("");
-      setError("পাসওয়ার্ড রিসেট করতে আগে আপনার Email দিন।");
+      setError("Please enter your email first.");
       return;
     }
 
@@ -61,7 +62,24 @@ export default function AdminLoginPage() {
         className="w-full max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-panel"
       >
         <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
-        <p className="text-sm text-slate-600">Super Admin / Editor / Moderator credentials ব্যবহার করুন।</p>
+        <p className="text-sm text-slate-600">Use your Super Admin / Editor / Moderator account.</p>
+
+        {session && !role ? (
+          <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <p>
+              This account is authenticated, but no CMS role is assigned. Contact Super Admin, then sign
+              in again.
+            </p>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="w-full rounded-lg border border-amber-300 bg-white px-4 py-2 font-semibold text-amber-900"
+            >
+              Sign out
+            </button>
+          </div>
+        ) : null}
+
         <input
           type="email"
           required
@@ -91,8 +109,14 @@ export default function AdminLoginPage() {
           disabled={resetLoading}
           className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-70"
         >
-          {resetLoading ? "Sending reset link..." : "পাসওয়ার্ড ভুলে গেছেন?"}
+          {resetLoading ? "Sending reset link..." : "Forgot password?"}
         </button>
+        <Link
+          to="/admin/signup"
+          className="block w-full rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Create account
+        </Link>
         {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
       </form>

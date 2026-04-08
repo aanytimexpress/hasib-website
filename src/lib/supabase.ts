@@ -47,12 +47,19 @@ function createDemoQueryBuilder() {
 }
 
 function createDemoClient() {
+  const demoAuthError = { message: DEMO_ERROR_MESSAGE };
+
   return {
     from: () => createDemoQueryBuilder(),
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       getUser: async () => ({ data: { user: null }, error: null }),
-      signInWithPassword: async () => ({ data: { user: null, session: null }, error: { message: DEMO_ERROR_MESSAGE } }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: demoAuthError }),
+      signUp: async () => ({ data: { user: null, session: null }, error: demoAuthError }),
+      resetPasswordForEmail: async () => ({ data: {}, error: demoAuthError }),
+      updateUser: async () => ({ data: { user: null }, error: demoAuthError }),
+      setSession: async () => ({ data: { session: null, user: null }, error: demoAuthError }),
+      exchangeCodeForSession: async () => ({ data: { session: null, user: null }, error: demoAuthError }),
       signOut: async () => ({ error: null }),
       onAuthStateChange: () => ({
         data: {
