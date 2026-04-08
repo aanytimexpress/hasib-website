@@ -80,14 +80,7 @@ create table if not exists public.posts (
   view_count integer not null default 0,
   author_id uuid references public.users(id) on delete set null,
   category_id uuid references public.categories(id) on delete set null,
-  search_vector tsvector generated always as (
-    to_tsvector(
-      'simple',
-      unaccent(
-        coalesce(title, '') || ' ' || coalesce(excerpt, '') || ' ' || coalesce(content, '')
-      )
-    )
-  ) stored,
+  search_vector tsvector,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -264,11 +257,40 @@ begin
 end;
 $$;
 
+create or replace function public.update_posts_search_vector()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.search_vector := to_tsvector(
+    'simple',
+    unaccent(
+      coalesce(new.title, '') || ' ' || coalesce(new.excerpt, '') || ' ' || coalesce(new.content, '')
+    )
+  );
+  return new;
+end;
+$$;
+
 drop trigger if exists trg_users_updated_at on public.users;
 create trigger trg_users_updated_at before update on public.users for each row execute function public.set_updated_at();
 
 drop trigger if exists trg_posts_updated_at on public.posts;
 create trigger trg_posts_updated_at before update on public.posts for each row execute function public.set_updated_at();
+
+drop trigger if exists trg_posts_search_vector on public.posts;
+create trigger trg_posts_search_vector
+before insert or update of title, excerpt, content on public.posts
+for each row execute function public.update_posts_search_vector();
+
+update public.posts
+set search_vector = to_tsvector(
+  'simple',
+  unaccent(
+    coalesce(title, '') || ' ' || coalesce(excerpt, '') || ' ' || coalesce(content, '')
+  )
+)
+where search_vector is null;
 
 drop trigger if exists trg_pages_updated_at on public.pages;
 create trigger trg_pages_updated_at before update on public.pages for each row execute function public.set_updated_at();
