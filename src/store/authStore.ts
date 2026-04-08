@@ -1,6 +1,7 @@
 import { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
+import { isAllowlistedAdminEmail } from "../constants/auth";
 import { RoleName, UserProfile } from "../types/models";
 
 interface AuthState {
@@ -10,7 +11,7 @@ interface AuthState {
   profile: UserProfile | null;
   role: RoleName | null;
   initialize: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ error?: string; message?: string }>;
   signUp: (
     payload: { email: string; password: string; fullName: string }
   ) => Promise<{ error?: string; message?: string }>;
@@ -69,12 +70,48 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
   signIn: async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      return { error: error.message };
+    const normalizedEmail = email.trim().toLowerCase();
+    const signInResult = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+
+    if (!signInResult.error) {
+      await get().refreshProfile();
+      return {};
     }
-    await get().refreshProfile();
-    return {};
+
+    const errorMessage = signInResult.error.message || "Login failed.";
+    const isInvalidCredentials =
+      errorMessage.toLowerCase().includes("invalid login credentials") ||
+      errorMessage.toLowerCase().includes("invalid credentials");
+
+    // For allowlisted admin emails, auto-provision first login to keep setup simple.
+    if (isAllowlistedAdminEmail(normalizedEmail) && isInvalidCredentials) {
+      const fullName = normalizedEmail.split("@")[0] || "Admin User";
+      const signUpResult = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          },
+          emailRedirectTo:
+            typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined
+        }
+      });
+
+      if (signUpResult.error) {
+        return { error: signUpResult.error.message };
+      }
+
+      const retrySignIn = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+      if (retrySignIn.error) {
+        return { error: retrySignIn.error.message };
+      }
+
+      await get().refreshProfile();
+      return { message: "Admin account created and signed in." };
+    }
+
+    return { error: errorMessage };
   },
   signUp: async ({ email, password, fullName }) => {
     const redirectTo =

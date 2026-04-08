@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ADMIN_ALLOWLIST_EMAILS } from "../../constants/auth";
 import { useAuth } from "../../hooks/useAuth";
 
 const ADMIN_ROLES = new Set(["super_admin", "editor", "moderator"]);
@@ -31,6 +32,9 @@ export default function AdminLoginPage() {
     if (result.error) {
       setError(result.error);
       return;
+    }
+    if (result.message) {
+      setNotice(result.message);
     }
     const redirectTo = (location.state as { from?: string } | null)?.from || "/admin";
     navigate(redirectTo);
@@ -65,6 +69,7 @@ export default function AdminLoginPage() {
       >
         <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
         <p className="text-sm text-slate-600">Use your Super Admin / Editor / Moderator account.</p>
+        <p className="text-xs text-slate-500">Admin emails: {ADMIN_ALLOWLIST_EMAILS.join(", ")}</p>
 
         {session && !role ? (
           <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -132,7 +137,7 @@ export default function AdminLoginPage() {
           to="/admin/signup"
           className="block w-full rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
         >
-          Create account
+          Create account (optional)
         </Link>
         {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
