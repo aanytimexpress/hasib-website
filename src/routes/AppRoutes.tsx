@@ -51,42 +51,41 @@ export function AppRoutes() {
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/signup" element={<AdminSignupPage />} />
           <Route path="/admin/reset-password" element={<ResetPasswordPage />} />
-        </Route>
-
-        <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<DashboardPage />} />
+          <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<DashboardPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route element={<ProtectedRoute roles={["super_admin", "editor"]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/posts" element={<PostsPage />} />
+          <Route element={<ProtectedRoute roles={["super_admin", "editor"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/posts" element={<PostsPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route element={<ProtectedRoute roles={["super_admin"]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/pages" element={<PagesPage />} />
-            <Route path="/admin/gallery" element={<GalleryManagerPage />} />
-            <Route path="/admin/timeline" element={<TimelineManagerPage />} />
-            <Route path="/admin/favorites" element={<FavoritesManagerPage />} />
-            <Route path="/admin/media" element={<MediaManagerPage />} />
-            <Route path="/admin/menu" element={<MenuManagerPage />} />
-            <Route path="/admin/settings" element={<SettingsPage />} />
-            <Route path="/admin/seo" element={<SeoPage />} />
+          <Route element={<ProtectedRoute roles={["super_admin"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/pages" element={<PagesPage />} />
+              <Route path="/admin/gallery" element={<GalleryManagerPage />} />
+              <Route path="/admin/timeline" element={<TimelineManagerPage />} />
+              <Route path="/admin/favorites" element={<FavoritesManagerPage />} />
+              <Route path="/admin/media" element={<MediaManagerPage />} />
+              <Route path="/admin/menu" element={<MenuManagerPage />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
+              <Route path="/admin/seo" element={<SeoPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route element={<ProtectedRoute roles={["super_admin", "moderator"]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/comments" element={<CommentsManagerPage />} />
+          <Route element={<ProtectedRoute roles={["super_admin", "moderator"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/comments" element={<CommentsManagerPage />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route element={<ProtectedRoute roles={["super_admin"]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/users" element={<UsersPage />} />
+          <Route element={<ProtectedRoute roles={["super_admin"]} />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/users" element={<UsersPage />} />
+            </Route>
           </Route>
         </Route>
 

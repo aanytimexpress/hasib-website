@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { SiteSetting, SocialLink } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 
@@ -21,10 +21,12 @@ const footerLinks = [
 ];
 
 export function PublicLayout() {
+  const location = useLocation();
   const [siteTitle, setSiteTitle] = useState("Hasibur Rahman");
   const [authorName, setAuthorName] = useState("Hasibur Rahman");
   const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [socials, setSocials] = useState<SocialLink[]>([]);
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const load = async () => {
@@ -118,7 +120,13 @@ export function PublicLayout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 pb-10 pt-4 md:px-6 md:pt-6">
+      <main
+        className={
+          isAdminRoute
+            ? "mx-auto w-full px-0 pb-10 pt-4"
+            : "mx-auto w-full max-w-7xl px-4 pb-10 pt-4 md:px-6 md:pt-6"
+        }
+      >
         <Outlet />
       </main>
 

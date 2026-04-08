@@ -11,7 +11,7 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className={`sticky top-0 h-screen border-r border-slate-200 bg-white transition-all ${
+      className={`sticky top-24 h-[calc(100vh-6rem)] border-r border-slate-200 bg-white transition-all ${
         sidebarOpen ? "w-72" : "w-20"
       }`}
     >
