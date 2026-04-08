@@ -5,10 +5,12 @@ import { useAuth } from "../../hooks/useAuth";
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, session } = useAuth();
+  const { signIn, requestPasswordReset, session } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -18,6 +20,8 @@ export default function AdminLoginPage() {
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setError("");
+    setNotice("");
     setLoading(true);
     const result = await signIn(form.email, form.password);
     setLoading(false);
@@ -27,6 +31,27 @@ export default function AdminLoginPage() {
     }
     const redirectTo = (location.state as { from?: string } | null)?.from || "/admin";
     navigate(redirectTo);
+  };
+
+  const onForgotPassword = async () => {
+    if (!form.email.trim()) {
+      setNotice("");
+      setError("পাসওয়ার্ড রিসেট করতে আগে আপনার Email দিন।");
+      return;
+    }
+
+    setError("");
+    setNotice("");
+    setResetLoading(true);
+    const result = await requestPasswordReset(form.email.trim());
+    setResetLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    setNotice(result.message || "Password reset link sent.");
   };
 
   return (
@@ -60,6 +85,15 @@ export default function AdminLoginPage() {
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
+        <button
+          type="button"
+          onClick={() => void onForgotPassword()}
+          disabled={resetLoading}
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-70"
+        >
+          {resetLoading ? "Sending reset link..." : "পাসওয়ার্ড ভুলে গেছেন?"}
+        </button>
+        {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
       </form>
     </div>

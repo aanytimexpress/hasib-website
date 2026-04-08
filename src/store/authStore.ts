@@ -11,6 +11,8 @@ interface AuthState {
   role: RoleName | null;
   initialize: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
+  updatePassword: (password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -64,6 +66,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   signIn: async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      return { error: error.message };
+    }
+    await get().refreshProfile();
+    return {};
+  },
+  requestPasswordReset: async (email) => {
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/admin/reset-password` : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo ? { redirectTo } : undefined
+    );
+    if (error) {
+      return { error: error.message };
+    }
+    return { message: "Password reset link sent. Check your email inbox." };
+  },
+  updatePassword: async (password) => {
+    const { error } = await supabase.auth.updateUser({ password });
     if (error) {
       return { error: error.message };
     }
