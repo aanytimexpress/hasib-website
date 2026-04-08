@@ -30,6 +30,7 @@ export default function ResetPasswordPage() {
         const query = new URLSearchParams(window.location.search);
         const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
         const code = query.get("code");
+        const tokenHash = query.get("token_hash") || hash.get("token_hash");
         const accessToken = hash.get("access_token");
         const refreshToken = hash.get("refresh_token");
         const type = hash.get("type") || query.get("type");
@@ -38,6 +39,14 @@ export default function ResetPasswordPage() {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             throw exchangeError;
+          }
+        } else if (tokenHash && type === "recovery") {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token_hash: tokenHash
+          });
+          if (verifyError) {
+            throw verifyError;
           }
         } else if (accessToken && refreshToken && type === "recovery") {
           const { error: sessionError } = await supabase.auth.setSession({
