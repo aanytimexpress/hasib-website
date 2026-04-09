@@ -6,16 +6,22 @@
 
 :root {
   color-scheme: light;
-  --paper: #f8f1e7;
-  --paper-soft: rgba(255, 251, 245, 0.78);
+  --paper: #f6ece3;
+  --paper-soft: rgba(255, 251, 246, 0.8);
   --ink: #1f2f4b;
   --muted-ink: #5f6f85;
-  --accent: #ab5728;
-  --line: rgba(52, 88, 135, 0.12);
+  --accent: #d67446;
+  --line: rgba(88, 93, 124, 0.12);
 }
 
 * {
   box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
@@ -24,9 +30,9 @@ body {
   font-family: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(52, 88, 135, 0.16), transparent 26%),
-    radial-gradient(circle at top right, rgba(196, 109, 51, 0.1), transparent 22%),
-    linear-gradient(180deg, #fbf7f1 0%, #eef2f7 38%, #f6f1e8 100%);
+    radial-gradient(circle at 14% 18%, rgba(248, 205, 184, 0.5), transparent 22%),
+    radial-gradient(circle at 88% 12%, rgba(255, 228, 205, 0.42), transparent 24%),
+    linear-gradient(180deg, #f6ddd2 0%, #f9e8df 22%, #f7efe8 58%, #f8f3ee 100%);
   background-attachment: fixed;
   position: relative;
 }
@@ -36,11 +42,11 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.42;
+  opacity: 0.24;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+  background-size: 30px 30px;
   mask-image: radial-gradient(circle at center, black, transparent 88%);
 }
 
@@ -133,6 +139,19 @@ h4 {
   .ghost-button {
     @apply inline-flex items-center justify-center rounded-full border border-brand-200 bg-white/80 px-5 py-2.5 text-sm font-semibold text-brand-800 transition hover:border-brand-300 hover:bg-white;
   }
+
+  .float-soft {
+    animation: floatSoft 7s ease-in-out infinite;
+  }
+
+  .float-soft-delay {
+    animation: floatSoft 8.5s ease-in-out infinite;
+    animation-delay: 1.2s;
+  }
+
+  .editorial-panel {
+    @apply rounded-[38px] border border-[#eadfd2] bg-[rgba(255,252,248,0.9)] shadow-[0_28px_80px_rgba(95,61,39,0.12)] backdrop-blur-xl;
+  }
 }
 
 .line-clamp-2 {
@@ -147,4 +166,22 @@ h4 {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@keyframes floatSoft {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }

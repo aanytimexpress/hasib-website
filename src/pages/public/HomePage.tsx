@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenText,
+  Flame,
+  ImageIcon,
+  LayoutTemplate,
+  NotebookPen,
+  Sparkles
+} from "lucide-react";
 import { PostCard } from "../../components/public/PostCard";
 import { GalleryItem, HomepageSection, Post } from "../../types/models";
 import { supabase } from "../../lib/supabase";
@@ -18,7 +26,8 @@ const FALLBACK_SUBTITLE =
   "আমি হাসিবুর রহমান। এখানে আমি আমার জীবনের গল্প, স্মৃতি, অনুভূতি এবং চিন্তাগুলো শেয়ার করি।";
 const FALLBACK_QUOTE = "জীবনের প্রতিটি স্মৃতি এক একটি অনন্য গল্প";
 const PROFILE_IMAGE =
-  "https://ui-avatars.com/api/?name=Hasibur+Rahman&background=e2ecff&color=274c8a&size=300";
+  "https://ui-avatars.com/api/?name=Hasibur+Rahman&background=f9dfd1&color=7a3c1f&size=320";
+const FALLBACK_TOPICS = ["জীবনের গল্প", "স্মৃতি", "অনুভূতি", "ডায়েরি", "ভ্রমণ", "চিন্তা"];
 
 export default function HomePage() {
   const [sections, setSections] = useState<HomepageSection[]>([]);
@@ -105,10 +114,36 @@ export default function HomePage() {
 
   const featured = featuredPosts[0] || recentPosts[0] || null;
   const recentList = featured ? recentPosts.filter((item) => item.id !== featured.id) : recentPosts;
+  const topicRow =
+    categories.length > 0 ? categories.slice(0, 6).map((item) => item.name) : FALLBACK_TOPICS;
+
+  const stats = [
+    { label: "Featured stories", value: String(featuredPosts.length || 1).padStart(2, "0") },
+    { label: "Topic clusters", value: String(categories.length || 4).padStart(2, "0") },
+    { label: "Memory frames", value: String(galleryItems.length || 8).padStart(2, "0") }
+  ];
+
+  const processCards = [
+    {
+      index: "01",
+      title: "জীবনের গল্প",
+      text: "ব্যক্তিগত স্মৃতি, সময় আর অনুভূতির লেখা সুন্দরভাবে সাজানো থাকবে।"
+    },
+    {
+      index: "02",
+      title: "প্রিয় ফ্রেম",
+      text: "গ্যালারি, মুহূর্ত, ছোট নোট আর ডায়েরির অংশগুলো একসাথে দেখা যাবে।"
+    },
+    {
+      index: "03",
+      title: "নিয়মিত আপডেট",
+      text: "নতুন লেখা, জনপ্রিয় পোস্ট আর নির্বাচিত গল্পগুলো homepage-এ আলাদা করে ফুটে উঠবে।"
+    }
+  ];
 
   if (loading) {
     return (
-      <div className="rounded-[28px] border border-white/70 bg-white/70 p-10 text-center shadow-panel backdrop-blur-xl">
+      <div className="editorial-panel p-10 text-center">
         <p className="text-base text-slate-600">জার্নাল লোড হচ্ছে...</p>
       </div>
     );
@@ -116,175 +151,394 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8 md:space-y-10">
-      <section className="rounded-[36px] border border-white/70 bg-gradient-to-br from-white/85 via-sky-50/80 to-blue-100/70 p-7 shadow-[0_24px_70px_rgba(53,88,144,0.18)] backdrop-blur-xl md:p-12">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 text-center">
-          <img
-            src={PROFILE_IMAGE}
-            alt="Hasibur Rahman"
-            loading="lazy"
-            className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg md:h-32 md:w-32"
-          />
-          <p className="rounded-full bg-white/90 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">
-            Hasibur Rahman Journal
-          </p>
-          <h1 className="text-balance text-3xl font-bold leading-tight text-slate-900 md:text-5xl">
-            {heroSection?.title || FALLBACK_TITLE}
-          </h1>
-          <p className="max-w-3xl text-lg leading-9 text-slate-700 md:text-xl">
-            {heroSection?.content || FALLBACK_SUBTITLE}
-          </p>
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-700 px-6 py-3 text-base font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-brand-800 hover:shadow-lg"
-          >
-            আমার লেখা পড়ুন <ArrowRight size={18} />
-          </Link>
+      <section className="editorial-panel relative overflow-hidden px-6 py-8 md:px-10 md:py-10">
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-44 lg:block">
+          <div className="float-soft absolute left-2 top-20 w-40 rounded-[28px] border border-white/70 bg-[rgba(255,248,242,0.82)] p-4 shadow-[0_20px_48px_rgba(95,61,39,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#d67446]">
+              লেখার নোট
+            </p>
+            <p className="mt-3 text-sm leading-7 text-slate-700">
+              ছোট ছোট স্মৃতি, অসমাপ্ত অনুভূতি আর মন ছোঁয়া ভাবনা।
+            </p>
+          </div>
+          <div className="float-soft-delay absolute left-10 top-72 w-36 rounded-[26px] border border-white/60 bg-white/70 p-4 shadow-[0_18px_44px_rgba(95,61,39,0.08)]">
+            <p className="text-xs text-slate-500">পাঠকের প্রিয়</p>
+            <p className="mt-2 line-clamp-3 text-sm font-semibold leading-6 text-brand-900">
+              {popularPosts[0]?.title || "সবচেয়ে বেশি পড়া লেখাগুলো আলাদাভাবে থাকবে"}
+            </p>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-44 lg:block">
+          <div className="float-soft-delay absolute right-3 top-12 w-40 rounded-[28px] bg-[#ec7f56] p-4 text-white shadow-[0_22px_50px_rgba(214,116,70,0.28)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+              Content blocks
+            </p>
+            <p className="mt-3 text-sm leading-6">Stories, gallery, quote, favorites</p>
+          </div>
+          <div className="float-soft absolute right-12 top-72 w-36 rounded-[26px] bg-[#1f2f4b] p-4 text-white shadow-[0_18px_48px_rgba(31,47,75,0.22)]">
+            <p className="text-xs text-white/65">আজকের ফ্রেম</p>
+            <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6">
+              {galleryItems[0]?.title || "নির্বাচিত ছবির জন্য আলাদা spotlight"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <p className="inline-flex rounded-full bg-[#fff4ee] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c55b2f]">
+                Hasibur Rahman Journal
+              </p>
+              <h1 className="max-w-xl text-balance font-display text-4xl leading-[1.05] text-brand-900 md:text-[4.2rem]">
+                {heroSection?.title || FALLBACK_TITLE}
+              </h1>
+              <p className="max-w-xl text-base leading-8 text-slate-600 md:text-lg">
+                {heroSection?.content || FALLBACK_SUBTITLE}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link to="/blog" className="soft-button gap-2">
+                আমার লেখা পড়ুন <ArrowRight size={17} />
+              </Link>
+              <Link to="/about" className="ghost-button">
+                লেখকের পরিচয়
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {topicRow.map((topic) => (
+                <span
+                  key={topic}
+                  className="rounded-full border border-[#eadfd2] bg-white px-3 py-1.5 text-sm text-slate-600"
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-[24px] border border-[#eadfd2] bg-white px-4 py-4 shadow-sm"
+                >
+                  <p className="text-2xl font-semibold text-brand-900 md:text-3xl">{stat.value}</p>
+                  <p className="mt-1 text-sm text-slate-500">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-[560px]">
+            <div className="absolute -left-4 top-20 hidden rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_18px_44px_rgba(95,61,39,0.1)] md:block">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d67446]">
+                Writing board
+              </p>
+              <div className="mt-3 space-y-2">
+                <div className="h-2 w-28 rounded-full bg-[#e9edf4]" />
+                <div className="h-2 w-20 rounded-full bg-[#f2d3c0]" />
+                <div className="h-2 w-24 rounded-full bg-[#e9edf4]" />
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-[34px] border border-[#eadfd2] bg-[#fffdfa] p-4 shadow-[0_30px_90px_rgba(95,61,39,0.14)] md:p-5">
+              <div className="rounded-[28px] border border-[#efe3d8] bg-white p-4">
+                <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded-full bg-[#fff4ee] px-3 py-1 font-semibold text-[#c55b2f]">
+                    Story Drafts
+                  </span>
+                  <span className="rounded-full bg-[#f2f5fa] px-3 py-1 text-slate-500">Memory Archive</span>
+                  <span className="rounded-full bg-[#f2f5fa] px-3 py-1 text-slate-500">Gallery Notes</span>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+                  <div className="rounded-[24px] border border-[#efe3d8] bg-[#fffbf7] p-4">
+                    <div className="mb-3 flex items-center gap-3">
+                      <img
+                        src={featured?.cover_image_url || PROFILE_IMAGE}
+                        alt={featured?.title || "Hasibur Rahman"}
+                        className="h-16 w-16 rounded-2xl object-cover"
+                      />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d67446]">
+                          Featured note
+                        </p>
+                        <h2 className="mt-1 font-display text-2xl leading-tight text-brand-900">
+                          {featured?.title || "আমার গল্প, আমার সময়"}
+                        </h2>
+                      </div>
+                    </div>
+                    <p className="line-clamp-4 text-sm leading-7 text-slate-600">
+                      {featured?.excerpt ||
+                        "ব্যক্তিগত লেখা, স্মৃতি আর সময়ের টুকরোগুলোকে একটি সুন্দর, সংযত, পাঠযোগ্য হোমপেজে তুলে ধরা হবে।"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-[24px] bg-[#ec7f56] p-4 text-white">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                        Editorial stack
+                      </p>
+                      <p className="mt-3 text-lg font-semibold leading-7">
+                        Stories, thoughts, photo memories and personal highlights
+                      </p>
+                    </div>
+                    <div className="rounded-[24px] bg-[#1f2f4b] p-4 text-white">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/65">
+                        Reading mood
+                      </p>
+                      <ul className="mt-3 space-y-2 text-sm text-white/85">
+                        <li>Calm Bengali typography</li>
+                        <li>Soft premium spacing</li>
+                        <li>Featured visual blocks</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {processCards.map((item) => (
+                    <div key={item.index} className="rounded-[22px] border border-[#efe3d8] bg-[#fffbf7] p-4">
+                      <p className="text-sm font-semibold text-[#d67446]">{item.index}</p>
+                      <h3 className="mt-2 font-semibold text-brand-900">{item.title}</h3>
+                      <p className="mt-2 text-xs leading-6 text-slate-500">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-[#efe3d8] pt-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-500 md:text-base">
+            {topicRow.map((item) => (
+              <span key={item} className="font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      {featured ? (
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="inline-flex items-center gap-2 text-2xl font-semibold text-slate-900 md:text-3xl">
-              <Sparkles size={24} className="text-brand-700" />
-              Featured Post
-            </h2>
-            <Link to="/blog" className="text-sm font-semibold text-brand-700 hover:text-brand-800">
-              সব লেখা
-            </Link>
-          </div>
-
-          <article className="group overflow-hidden rounded-[30px] border border-white/70 bg-white/75 shadow-[0_20px_55px_rgba(29,64,121,0.16)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(29,64,121,0.2)]">
-            <div className="grid lg:grid-cols-[1.25fr_1fr]">
-              <div className="overflow-hidden">
+      <section className="grid gap-6 xl:grid-cols-[1.28fr_0.72fr]">
+        {featured ? (
+          <article className="editorial-panel overflow-hidden p-4 md:p-5">
+            <div className="grid gap-4 lg:grid-cols-[1.18fr_0.82fr]">
+              <div className="overflow-hidden rounded-[30px]">
                 {featured.cover_image_url ? (
                   <img
                     src={featured.cover_image_url}
                     alt={featured.title}
                     loading="lazy"
-                    className="h-full min-h-[300px] w-full object-cover transition duration-500 group-hover:scale-105"
+                    className="h-full min-h-[360px] w-full object-cover"
                   />
                 ) : (
-                  <div className="h-full min-h-[300px] w-full bg-gradient-to-br from-brand-200 via-sky-100 to-cyan-100" />
+                  <div className="h-full min-h-[360px] w-full bg-[linear-gradient(135deg,#f7e6d7,#fff9f3_42%,#e9eef7)]" />
                 )}
               </div>
 
-              <div className="flex flex-col justify-between gap-5 p-6 md:p-8">
-                <div className="space-y-3">
-                  <p className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-800">
-                    স্মৃতির খাতা
+              <div className="flex flex-col justify-between gap-5 rounded-[30px] bg-white p-6">
+                <div className="space-y-4">
+                  <p className="inline-flex rounded-full bg-[#fff4ee] px-3 py-1 text-xs font-semibold text-[#c55b2f]">
+                    Featured Story
                   </p>
-                  <h3 className="text-2xl font-bold leading-tight text-slate-900 md:text-3xl">
-                    {featured.title}
-                  </h3>
+                  <h2 className="font-display text-3xl leading-tight text-brand-900">{featured.title}</h2>
                   <p className="text-sm text-slate-500">
                     {formatDate(featured.published_at || featured.created_at)}
                   </p>
                   {featured.excerpt ? (
-                    <p className="line-clamp-4 text-base leading-8 text-slate-700">{featured.excerpt}</p>
+                    <p className="line-clamp-4 text-sm leading-7 text-slate-600">{featured.excerpt}</p>
                   ) : null}
                 </div>
 
-                <Link
-                  to={`/blog/${featured.slug}`}
-                  className="inline-flex items-center gap-2 text-base font-semibold text-brand-700 transition hover:text-brand-800"
-                >
-                  বিস্তারিত পড়ুন <ArrowRight size={18} />
+                <Link to={`/blog/${featured.slug}`} className="soft-button w-fit gap-2">
+                  পুরো লেখা পড়ুন <ArrowRight size={16} />
                 </Link>
               </div>
             </div>
           </article>
-        </section>
-      ) : null}
+        ) : (
+          <div className="editorial-panel p-8 text-center text-slate-600">
+            Featured content dashboard থেকে যুক্ত করলে এখানে বড় spotlight দেখা যাবে।
+          </div>
+        )}
 
-      <section className="grid gap-6 xl:grid-cols-[2.2fr_1fr]">
+        <aside className="editorial-panel p-5 md:p-6">
+          <p className="inline-flex rounded-full bg-[#fff4ee] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c55b2f]">
+            How It Feels
+          </p>
+          <h3 className="mt-4 font-display text-4xl leading-tight text-brand-900">
+            How this journal
+            <span className="text-[#d67446]"> works</span>
+          </h3>
+          <p className="mt-4 text-sm leading-7 text-slate-600">
+            Reference image-এর মতো structured landing feel রাখার জন্য আমরা narrative content-কে product-style presentation-এ এনেছি।
+          </p>
+
+          <div className="mt-6 space-y-3">
+            {processCards.map((item) => (
+              <div key={item.index} className="rounded-[24px] border border-[#eadfd2] bg-white p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ec7f56] text-sm font-semibold text-white">
+                    {item.index}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-brand-900">{item.title}</h4>
+                    <p className="mt-1 text-sm leading-6 text-slate-500">{item.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.8fr_0.8fr]">
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">সাম্প্রতিক লেখা</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <NotebookPen size={20} className="text-[#d67446]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#c55b2f]">Recent Stories</p>
+              <h2 className="font-display text-4xl text-brand-900">সাম্প্রতিক লেখা</h2>
+            </div>
+          </div>
+
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {recentList.slice(0, 9).map((post) => (
+            {recentList.slice(0, 6).map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
         </div>
 
-        <aside className="rounded-[26px] border border-white/70 bg-white/72 p-5 shadow-[0_16px_40px_rgba(33,74,141,0.13)] backdrop-blur-xl">
-          <h3 className="mb-4 inline-flex items-center gap-2 text-xl font-semibold text-slate-900">
-            <Flame size={20} className="text-orange-500" />
-            জনপ্রিয় লেখা
-          </h3>
+        <aside className="editorial-panel p-5 md:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff4ee]">
+              <Flame size={18} className="text-[#d67446]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#c55b2f]">Most Read</p>
+              <h3 className="font-display text-3xl text-brand-900">জনপ্রিয় লেখা</h3>
+            </div>
+          </div>
 
-          <div className="space-y-3">
+          <div className="mt-5 space-y-3">
             {popularPosts.map((post, index) => (
               <Link
                 key={post.id}
                 to={`/blog/${post.slug}`}
-                className="group block rounded-2xl border border-slate-200/80 bg-white/80 p-3 transition duration-300 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+                className="group block rounded-[24px] border border-[#eadfd2] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-sm"
               >
-                <p className="mb-1 text-xs font-semibold text-slate-400">#{String(index + 1).padStart(2, "0")}</p>
-                <p className="line-clamp-2 font-medium leading-7 text-slate-800 group-hover:text-brand-700">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d67446]">
+                  No. {String(index + 1).padStart(2, "0")}
+                </p>
+                <p className="mt-2 line-clamp-2 font-semibold leading-7 text-brand-900 group-hover:text-[#a44b21]">
                   {post.title}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">{post.view_count} বার পড়া হয়েছে</p>
+                <p className="mt-2 text-xs text-slate-500">{post.view_count} বার পড়া হয়েছে</p>
               </Link>
             ))}
           </div>
         </aside>
       </section>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/72 p-6 shadow-[0_14px_34px_rgba(29,64,121,0.12)] backdrop-blur-xl md:p-7">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-2xl font-semibold text-slate-900">বিভাগসমূহ</h2>
-          <Link to="/blog" className="text-sm font-semibold text-brand-700 hover:text-brand-800">
-            ক্যাটাগরি অনুযায়ী দেখুন
-          </Link>
+      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="editorial-panel p-5 md:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <LayoutTemplate size={18} className="text-[#d67446]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#c55b2f]">Topics</p>
+              <h3 className="font-display text-3xl text-brand-900">বিভাগসমূহ</h3>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                to={`/blog?category=${category.slug}`}
+                className="rounded-full border border-[#eadfd2] bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-[#efc6b1] hover:bg-[#fff4ee] hover:text-[#a44b21]"
+              >
+                {category.name} <span className="text-slate-400">({category.count})</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2.5">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/blog?category=${category.slug}`}
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:text-white"
-            >
-              <span>{category.name}</span>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 group-hover:bg-white/20">
-                {category.count}
-              </span>
+        <div className="editorial-panel p-5 md:p-6">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <ImageIcon size={18} className="text-[#d67446]" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#c55b2f]">Preview Gallery</p>
+                <h3 className="font-display text-3xl text-brand-900">গ্যালারি প্রিভিউ</h3>
+              </div>
+            </div>
+            <Link to="/gallery" className="ghost-button">
+              সব ছবি
             </Link>
-          ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {galleryItems.slice(0, 8).map((item, index) => (
+              <Link
+                key={item.id}
+                to="/gallery"
+                className={`group relative overflow-hidden rounded-[26px] ${
+                  index === 0 ? "md:col-span-2 md:row-span-2" : ""
+                }`}
+              >
+                <img
+                  src={item.thumbnail_url || item.image_url}
+                  alt={item.title}
+                  loading="lazy"
+                  className={`w-full object-cover transition duration-500 group-hover:scale-105 ${
+                    index === 0 ? "h-[260px] md:h-full" : "h-32 md:h-40"
+                  }`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
+                <p className="absolute bottom-3 left-3 right-3 translate-y-2 text-xs text-white opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                  {item.title}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/75 p-6 shadow-[0_16px_38px_rgba(29,64,121,0.14)] backdrop-blur-xl md:p-7">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-2xl font-semibold text-slate-900">গ্যালারি প্রিভিউ</h2>
-          <Link to="/gallery" className="text-sm font-semibold text-brand-700 hover:text-brand-800">
-            সব ছবি দেখুন
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {galleryItems.slice(0, 8).map((item) => (
-            <Link key={item.id} to="/gallery" className="group relative overflow-hidden rounded-2xl">
-              <img
-                src={item.thumbnail_url || item.image_url}
-                alt={item.title}
-                loading="lazy"
-                className="h-36 w-full object-cover transition duration-500 group-hover:scale-110 md:h-44"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-              <p className="absolute bottom-2 left-3 right-3 translate-y-2 text-xs text-white opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                {item.title}
+      <section className="editorial-panel overflow-hidden p-0">
+        <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
+          <div className="bg-[#1f2f4b] px-6 py-8 text-white md:px-8 md:py-10">
+            <p className="inline-flex rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+              Journal Mood
+            </p>
+            <h3 className="mt-4 font-display text-4xl leading-tight">A softer, warmer landing theme for your journal</h3>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-white/74">
+              এইবার homepage শুধু content list না, বরং একটি designed experience হিসেবে দাঁড়াবে।
+            </p>
+          </div>
+          <div className="bg-[linear-gradient(135deg,#f9e6d8,#fff9f4)] px-6 py-8 md:px-8 md:py-10">
+            <div className="flex items-start gap-3">
+              <Sparkles size={18} className="mt-1 text-[#d67446]" />
+              <p className="font-display text-3xl leading-[1.6] text-brand-900">
+                {quoteSection?.content || FALLBACK_QUOTE}
               </p>
-            </Link>
-          ))}
+            </div>
+            <div className="mt-5">
+              <Link to="/about" className="soft-button gap-2">
+                লেখকের গল্প দেখুন <BookOpenText size={16} />
+              </Link>
+            </div>
+          </div>
         </div>
-      </section>
-
-      <section className="rounded-[28px] border border-white/70 bg-gradient-to-r from-brand-700/95 via-brand-600/90 to-cyan-600/90 p-7 text-center text-white shadow-[0_20px_50px_rgba(26,71,140,0.22)] md:p-9">
-        <p className="mx-auto max-w-3xl text-2xl font-medium italic leading-[1.9] md:text-3xl">
-          {quoteSection?.content || FALLBACK_QUOTE}
-        </p>
       </section>
     </div>
   );

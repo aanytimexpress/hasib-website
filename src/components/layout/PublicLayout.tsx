@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { Search } from "lucide-react";
 import { SiteSetting, SocialLink } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
@@ -19,6 +20,7 @@ const footerLinks = [
   { label: "Home", path: "/" },
   { label: "About", path: "/about" },
   { label: "Blog", path: "/blog" },
+  { label: "Gallery", path: "/gallery" },
   { label: "Contact", path: "/contact" }
 ];
 
@@ -57,21 +59,34 @@ export function PublicLayout() {
 
   const avatarSrc =
     authorAvatar ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=e5edff&color=1f4a8a&size=160`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f9dfd1&color=7a3c1f&size=160`;
 
   return (
-    <div className="min-h-screen font-bengali text-slate-800">
-      <header className="sticky top-0 z-40 px-3 pb-2 pt-4 md:px-6">
-        <div className="mx-auto w-full max-w-7xl rounded-[28px] border border-white/60 bg-white/55 px-3 py-3 shadow-[0_18px_50px_rgba(33,80,152,0.16)] backdrop-blur-2xl md:px-5">
+    <div className="relative min-h-screen overflow-x-hidden font-bengali text-slate-800">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[620px] overflow-hidden">
+        <div className="absolute left-[-6%] top-28 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(249,184,143,0.35),transparent_68%)] blur-2xl" />
+        <div className="absolute right-[-4%] top-12 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.55),transparent_70%)] blur-3xl" />
+      </div>
+
+      <header className="sticky top-0 z-40 px-4 pt-5 md:px-8">
+        <div className="editorial-panel mx-auto max-w-[1240px] px-4 py-4 md:px-6">
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to="/"
-              className="rounded-full bg-white/85 px-5 py-2 text-lg font-bold text-brand-800 shadow-sm md:text-xl"
-            >
-              {siteTitle}
+            <Link to="/" className="flex items-center gap-3 rounded-full bg-white px-3 py-2 shadow-sm">
+              <img
+                src={avatarSrc}
+                alt={authorName}
+                loading="lazy"
+                className="h-10 w-10 rounded-full object-cover"
+              />
+              <div className="leading-tight">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#d67446]">
+                  Personal Journal
+                </p>
+                <p className="font-display text-lg text-brand-900 md:text-xl">{siteTitle}</p>
+              </div>
             </Link>
 
-            <nav className="order-3 mt-2 flex w-full items-center gap-2 overflow-x-auto pb-1 text-sm md:order-2 md:mt-0 md:w-auto md:flex-1 md:justify-center md:text-[15px]">
+            <nav className="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 text-sm md:order-2 md:w-auto md:flex-1 md:justify-center">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -79,8 +94,8 @@ export function PublicLayout() {
                   className={({ isActive }) =>
                     `whitespace-nowrap rounded-full px-4 py-2 font-medium transition duration-300 ${
                       isActive
-                        ? "bg-brand-700 text-white shadow-lg shadow-brand-200"
-                        : "bg-white/75 text-slate-700 hover:-translate-y-0.5 hover:bg-white hover:text-brand-700"
+                        ? "bg-[#1f2f4b] text-white shadow-[0_14px_32px_rgba(31,47,75,0.18)]"
+                        : "bg-transparent text-slate-600 hover:bg-white hover:text-brand-900"
                     }`
                   }
                 >
@@ -90,13 +105,21 @@ export function PublicLayout() {
             </nav>
 
             <div className="order-2 ml-auto flex items-center gap-2 md:order-3">
+              <NavLink
+                to="/search"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:text-brand-900"
+                aria-label="Search"
+              >
+                <Search size={18} />
+              </NavLink>
+
               {session ? (
                 <>
                   <NavLink
                     to="/account"
                     className={({ isActive }) =>
-                      `rounded-full px-4 py-2 text-sm font-medium transition ${
-                        isActive ? "bg-brand-700 text-white" : "bg-white/80 text-slate-700 hover:bg-white"
+                      `rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        isActive ? "bg-[#1f2f4b] text-white" : "bg-white text-slate-700 hover:text-brand-900"
                       }`
                     }
                   >
@@ -106,8 +129,8 @@ export function PublicLayout() {
                     <NavLink
                       to="/admin"
                       className={({ isActive }) =>
-                        `rounded-full px-4 py-2 text-sm font-medium transition ${
-                          isActive ? "bg-slate-900 text-white" : "bg-white/80 text-slate-700 hover:bg-white"
+                        `rounded-full px-4 py-2 text-sm font-semibold transition ${
+                          isActive ? "bg-[#d67446] text-white" : "bg-[#fff4ee] text-[#a44b21] hover:bg-[#ffe8db]"
                         }`
                       }
                     >
@@ -119,71 +142,56 @@ export function PublicLayout() {
                 <NavLink
                   to="/auth"
                   className={({ isActive }) =>
-                    `rounded-full px-4 py-2 text-sm font-medium transition ${
-                      isActive ? "bg-brand-700 text-white" : "bg-white/80 text-slate-700 hover:bg-white"
+                    `rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      isActive ? "bg-[#d67446] text-white" : "bg-[#fff4ee] text-[#a44b21] hover:bg-[#ffe8db]"
                     }`
                   }
                 >
-                  Login
+                  Sign in
                 </NavLink>
               )}
-              <NavLink
-                to="/search"
-                className={({ isActive }) =>
-                  `rounded-full px-4 py-2 text-sm font-medium transition ${
-                    isActive ? "bg-brand-700 text-white" : "bg-white/80 text-slate-700 hover:bg-white"
-                  }`
-                }
-              >
-                Search
-              </NavLink>
-              <img
-                src={avatarSrc}
-                alt={authorName}
-                loading="lazy"
-                className="h-11 w-11 rounded-full border-2 border-white object-cover shadow-md"
-              />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 pb-10 pt-4 md:px-6 md:pt-6">
+      <main className="relative z-10 mx-auto w-full max-w-[1240px] px-4 pb-16 pt-6 md:px-8 md:pt-8">
         <Outlet />
       </main>
 
-      <footer className="mt-10 border-t border-white/50 bg-white/35 py-10 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 text-center md:px-6">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {footerLinks.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="rounded-full bg-white/70 px-4 py-1.5 text-sm text-slate-700 transition hover:bg-white hover:text-brand-700"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+      <footer className="relative z-10 px-4 pb-8 md:px-8">
+        <div className="editorial-panel mx-auto max-w-[1240px] px-5 py-8 md:px-8">
+          <div className="flex flex-col items-center gap-5 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {footerLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="rounded-full bg-white px-4 py-2 text-sm text-slate-700 transition hover:text-brand-900"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-            {socials.map((item) => (
-              <a
-                key={item.id}
-                href={item.url}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-white/60 px-3 py-1 text-slate-600 transition hover:bg-white hover:text-brand-700"
-              >
-                {item.platform}
-              </a>
-            ))}
-          </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+              {socials.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#fff4ee] px-3 py-1.5 text-[#a44b21] transition hover:bg-white"
+                >
+                  {item.platform}
+                </a>
+              ))}
+            </div>
 
-          <p className="text-sm text-slate-500">&copy; {siteTitle}</p>
+            <p className="text-sm text-slate-500">&copy; {siteTitle}</p>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
-
