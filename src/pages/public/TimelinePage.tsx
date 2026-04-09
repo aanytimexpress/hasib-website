@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { CalendarDays, Milestone } from "lucide-react";
 import { PageRecord, TimelineEvent } from "../../types/models";
 import { supabase } from "../../lib/supabase";
@@ -6,7 +6,7 @@ import { sanitizeHtml } from "../../lib/sanitize";
 import { formatDate } from "../../lib/date";
 
 const FALLBACK_TIMELINE_HTML =
-  "<p>জীবনের উল্লেখযোগ্য সময়, ঘটনা ও গুরুত্বপূর্ণ মুহূর্তগুলো এখানে সাজানো থাকবে।</p>";
+  "<p>জীবনের উল্লেখযোগ্য সময়, ঘটনা এবং গুরুত্বপূর্ণ মোড়গুলো এখানে একটি সময়রেখায় সাজানো থাকবে।</p>";
 
 export default function TimelinePage() {
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
@@ -30,7 +30,7 @@ export default function TimelinePage() {
   if (loading) {
     return (
       <div className="rounded-[28px] border border-white/70 bg-white/70 p-10 text-center shadow-panel backdrop-blur-xl">
-        <p className="text-base text-slate-600">Timeline লোড হচ্ছে...</p>
+        <p className="text-base text-slate-600">সময়রেখা প্রস্তুত করা হচ্ছে...</p>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function TimelinePage() {
 
         {timeline.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white/85 p-8 text-center">
-            <p className="text-slate-600">এখনও কোনো timeline event যোগ করা হয়নি।</p>
+            <p className="text-slate-600">এখনও কোনো সময়রেখার ঘটনা যোগ করা হয়নি।</p>
           </div>
         ) : (
           <div className="relative pl-7 md:pl-10">

@@ -9,6 +9,7 @@ import { Comment, Post } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
 import { formatDate } from "../../lib/date";
+import { toBanglaNumber } from "../../lib/locale";
 
 export default function BlogPostPage() {
   const { slug } = useParams();
@@ -138,9 +139,13 @@ export default function BlogPostPage() {
           <p className="section-kicker">{formatDate(post.published_at || post.created_at)}</p>
           <h1 className="section-title max-w-4xl">{post.title}</h1>
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-            <span className="rounded-full bg-white/85 px-4 py-2">পড়তে সময় {post.reading_minutes} মিনিট</span>
+            <span className="rounded-full bg-white/85 px-4 py-2">
+              পড়তে সময় {toBanglaNumber(post.reading_minutes || 1)} মিনিট
+            </span>
             {post.category ? <span className="rounded-full bg-brand-50 px-4 py-2 text-brand-800">{post.category.name}</span> : null}
-            <span className="rounded-full bg-white/85 px-4 py-2">{post.view_count} বার দেখা হয়েছে</span>
+            <span className="rounded-full bg-white/85 px-4 py-2">
+              {toBanglaNumber(post.view_count || 0)} বার দেখা হয়েছে
+            </span>
           </div>
         </div>
       </section>
@@ -191,7 +196,9 @@ export default function BlogPostPage() {
             </p>
             <div className="space-y-2 text-sm text-slate-600">
               <div className="rounded-[22px] bg-white/85 px-4 py-3">প্রকাশ: {formatDate(post.published_at || post.created_at)}</div>
-              <div className="rounded-[22px] bg-white/85 px-4 py-3">লেখার সময়: {post.reading_minutes} মিনিট</div>
+              <div className="rounded-[22px] bg-white/85 px-4 py-3">
+                লেখার সময়: {toBanglaNumber(post.reading_minutes || 1)} মিনিট
+              </div>
             </div>
           </div>
 
@@ -289,7 +296,9 @@ export default function BlogPostPage() {
                 className="rounded-[24px] border border-brand-100 bg-white/85 p-4 transition hover:-translate-y-0.5 hover:border-accent-300 hover:shadow-sm"
               >
                 <p className="font-display text-2xl leading-tight text-brand-900">{item.title}</p>
-                <p className="mt-2 text-xs text-slate-500">{item.reading_minutes} মিনিটের পাঠ</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  {toBanglaNumber(item.reading_minutes || 1)} মিনিটের পাঠ
+                </p>
               </Link>
             ))}
           </div>

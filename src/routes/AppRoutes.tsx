@@ -35,7 +35,7 @@ const SeoPage = lazy(() => import("../pages/admin/SeoPage"));
 const UsersPage = lazy(() => import("../pages/admin/UsersPage"));
 
 function Loader() {
-  return <div className="p-6 text-center text-sm text-slate-600">Loading...</div>;
+  return <div className="p-6 text-center text-sm text-slate-600">পাতা প্রস্তুত করা হচ্ছে...</div>;
 }
 
 export function AppRoutes() {

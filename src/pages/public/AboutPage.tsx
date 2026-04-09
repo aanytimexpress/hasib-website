@@ -1,17 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { GraduationCap, MapPin, Languages, NotebookPen } from "lucide-react";
 import { PageRecord, UserProfile } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
+import { localizeLanguage, localizeStaticText } from "../../lib/locale";
 
 const DEFAULT_EDUCATION = [
-  "Bogura Cantonment Public School and College",
-  "Government Azizul Haque College"
+  "বগুড়া ক্যান্টনমেন্ট পাবলিক স্কুল অ্যান্ড কলেজ",
+  "গভর্নমেন্ট আজিজুল হক কলেজ"
 ];
 
 const FALLBACK_ABOUT_HTML =
-  "<p>এই পেইজের কনটেন্ট admin dashboard থেকে আপডেট করুন। আপনার পরিচয়, শিক্ষা, অভিজ্ঞতা এবং ব্যক্তিগত গল্প এখানে দেখানো হবে।</p>";
+  "<p>এই অংশটি অ্যাডমিন ড্যাশবোর্ড থেকে সম্পাদনা করা যাবে। এখানে লেখকের পরিচয়, শিক্ষা, পথচলা, স্মৃতি আর ব্যক্তিগত গল্প সুন্দরভাবে দেখানো হবে।</p>";
 
 export default function AboutPage() {
   const [page, setPage] = useState<PageRecord | null>(null);
@@ -39,9 +40,11 @@ export default function AboutPage() {
   }, [page?.json_content]);
 
   const languages =
-    profile?.language && profile.language.length > 0 ? profile.language : ["Bangla", "English"];
-  const fullName = profile?.full_name || "Hasibur Rahman";
-  const location = profile?.location || "Bogura, Bangladesh";
+    profile?.language && profile.language.length > 0
+      ? profile.language.map((item) => localizeLanguage(item))
+      : ["বাংলা", "ইংরেজি"];
+  const fullName = localizeStaticText(profile?.full_name || "Hasibur Rahman");
+  const location = localizeStaticText(profile?.location || "Bogura, Bangladesh");
   const avatarUrl =
     profile?.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e5edff&color=1f4a8a&size=240`;
@@ -49,7 +52,7 @@ export default function AboutPage() {
   if (loading) {
     return (
       <div className="rounded-[28px] border border-white/70 bg-white/70 p-10 text-center shadow-panel backdrop-blur-xl">
-        <p className="text-base text-slate-600">About section লোড হচ্ছে...</p>
+        <p className="text-base text-slate-600">পরিচিতির অংশ প্রস্তুত করা হচ্ছে...</p>
       </div>
     );
   }
@@ -65,7 +68,7 @@ export default function AboutPage() {
             {page?.title || "আমার সম্পর্কে"}
           </h1>
           <p className="max-w-3xl text-base leading-8 text-slate-700 md:text-lg">
-            এই জার্নালে আমি জীবনের গল্প, স্মৃতি, অনুভূতি এবং পথচলার অভিজ্ঞতা ভাগ করি।
+            এই জার্নালে আমি জীবনের গল্প, স্মৃতি, অনুভূতি এবং পথচলার অভিজ্ঞতাগুলো যত্ন করে তুলে ধরি।
           </p>
         </div>
       </section>

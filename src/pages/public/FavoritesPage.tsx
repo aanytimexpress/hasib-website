@@ -2,6 +2,7 @@
 import { Favorite, PageRecord } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
+import { toBanglaNumber } from "../../lib/locale";
 
 const typeLabels: Record<Favorite["type"], string> = {
   players: "খেলোয়াড়",
@@ -57,7 +58,7 @@ export default function FavoritesPage() {
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="font-display text-2xl text-brand-900">{typeLabels[type as Favorite["type"]] ?? type}</h2>
               <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-500">
-                {items.length} টি
+                {toBanglaNumber(items.length)} টি
               </span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

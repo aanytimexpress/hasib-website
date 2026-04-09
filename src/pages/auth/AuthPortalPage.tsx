@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+﻿import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, UserRound, MailCheck } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -13,6 +13,9 @@ function getFriendlyError(message: string): string {
   }
   if (lower.includes("invalid login credentials") || lower.includes("invalid credentials")) {
     return "ইমেইল বা পাসওয়ার্ড সঠিক নয়।";
+  }
+  if (lower.includes("too many requests")) {
+    return "অনেকবার চেষ্টা করা হয়েছে। একটু পরে আবার চেষ্টা করুন।";
   }
   return message;
 }
@@ -67,7 +70,7 @@ export default function AuthPortalPage() {
       navigate("/admin");
       return;
     }
-    setUserNotice("লগইন সফল হয়েছে।");
+    setUserNotice("প্রবেশ সফল হয়েছে।");
     const redirectTo = (location.state as { from?: string } | null)?.from || "/account";
     navigate(redirectTo);
   };
@@ -90,11 +93,11 @@ export default function AuthPortalPage() {
     const latestRole = useAuthStore.getState().role;
     if (!latestRole || !isAdminRole(latestRole)) {
       await signOut();
-      setAdminError("এই একাউন্টে admin dashboard access নেই।");
+      setAdminError("এই অ্যাকাউন্টে অ্যাডমিন ড্যাশবোর্ডে প্রবেশাধিকার নেই।");
       return;
     }
 
-    setAdminNotice(result.message || "Admin login successful.");
+    setAdminNotice(result.message || "অ্যাডমিন প্রবেশ সফল হয়েছে।");
     const redirectTo = (location.state as { from?: string } | null)?.from || "/admin";
     navigate(redirectTo);
   };
@@ -102,7 +105,7 @@ export default function AuthPortalPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center font-bengali text-slate-700">
-        Loading authentication...
+        লগইন ব্যবস্থা প্রস্তুত করা হচ্ছে...
       </div>
     );
   }
@@ -112,9 +115,9 @@ export default function AuthPortalPage() {
       <div className="mx-auto w-full max-w-6xl rounded-[32px] border border-white/70 bg-white/60 p-5 shadow-[0_25px_70px_rgba(27,78,152,0.16)] backdrop-blur-2xl md:p-8">
         <div className="mb-6 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Hasibur Rahman Journal</p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 md:text-4xl">Dual Authentication Portal</h1>
+          <h1 className="mt-2 text-3xl font-bold text-slate-900 md:text-4xl">দুই ধরনের প্রবেশপথ</h1>
           <p className="mt-2 text-sm text-slate-600 md:text-base">
-            User এবং Admin login flow একই জায়গা থেকে নিয়ন্ত্রণ করুন।
+            পাঠক ও অ্যাডমিন - দুই ধরনের লগইন একই জায়গা থেকে নিরাপদভাবে পরিচালনা করুন।
           </p>
         </div>
 
@@ -124,7 +127,7 @@ export default function AuthPortalPage() {
               <div className="rounded-full bg-brand-100 p-2 text-brand-700">
                 <UserRound size={18} />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900">User Login</h2>
+              <h2 className="text-xl font-semibold text-slate-900">পাঠক লগইন</h2>
             </div>
 
             <form className="space-y-3" onSubmit={(event) => void onUserLogin(event)}>
@@ -134,7 +137,7 @@ export default function AuthPortalPage() {
                 value={userForm.email}
                 onChange={(event) => setUserForm((prev) => ({ ...prev, email: event.target.value }))}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none transition focus:border-brand-500"
-                placeholder="Email address"
+                placeholder="ইমেইল ঠিকানা"
               />
               <input
                 type="password"
@@ -142,23 +145,23 @@ export default function AuthPortalPage() {
                 value={userForm.password}
                 onChange={(event) => setUserForm((prev) => ({ ...prev, password: event.target.value }))}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none transition focus:border-brand-500"
-                placeholder="Password"
+                placeholder="পাসওয়ার্ড"
               />
               <button
                 type="submit"
                 disabled={userLoading}
                 className="w-full rounded-xl bg-brand-700 px-4 py-2.5 font-semibold text-white transition hover:bg-brand-800 disabled:opacity-70"
               >
-                {userLoading ? "Logging in..." : "Login as User"}
+                {userLoading ? "প্রবেশ করা হচ্ছে..." : "পাঠক হিসেবে প্রবেশ করুন"}
               </button>
             </form>
 
             <div className="mt-4 flex flex-wrap gap-2 text-sm">
               <Link to="/auth/signup?mode=user" className="rounded-full bg-white px-3 py-1.5 text-brand-700 hover:bg-brand-50">
-                New user signup
+                নতুন অ্যাকাউন্ট খুলুন
               </Link>
               <Link to="/auth/forgot-password?mode=user" className="rounded-full bg-white px-3 py-1.5 text-slate-600 hover:bg-slate-100">
-                Forgot password
+                পাসওয়ার্ড ভুলে গেছেন?
               </Link>
             </div>
 
@@ -171,7 +174,7 @@ export default function AuthPortalPage() {
               <div className="rounded-full bg-indigo-100 p-2 text-indigo-700">
                 <Shield size={18} />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900">Admin Login</h2>
+              <h2 className="text-xl font-semibold text-slate-900">অ্যাডমিন লগইন</h2>
             </div>
 
             <form className="space-y-3" onSubmit={(event) => void onAdminLogin(event)}>
@@ -181,7 +184,7 @@ export default function AuthPortalPage() {
                 value={adminForm.email}
                 onChange={(event) => setAdminForm((prev) => ({ ...prev, email: event.target.value }))}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none transition focus:border-brand-500"
-                placeholder="Admin email"
+                placeholder="অ্যাডমিন ইমেইল"
               />
               <input
                 type="password"
@@ -189,34 +192,33 @@ export default function AuthPortalPage() {
                 value={adminForm.password}
                 onChange={(event) => setAdminForm((prev) => ({ ...prev, password: event.target.value }))}
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none transition focus:border-brand-500"
-                placeholder="Password"
+                placeholder="পাসওয়ার্ড"
               />
               <button
                 type="submit"
                 disabled={adminLoading}
                 className="w-full rounded-xl bg-slate-900 px-4 py-2.5 font-semibold text-white transition hover:bg-black disabled:opacity-70"
               >
-                {adminLoading ? "Checking access..." : "Login as Admin"}
+                {adminLoading ? "অ্যাক্সেস যাচাই করা হচ্ছে..." : "অ্যাডমিন হিসেবে প্রবেশ করুন"}
               </button>
             </form>
 
             <div className="mt-4 flex flex-wrap gap-2 text-sm">
               <Link to="/auth/signup?mode=admin" className="rounded-full bg-white px-3 py-1.5 text-brand-700 hover:bg-brand-50">
-                Admin signup
+                অ্যাডমিন অ্যাকাউন্ট খুলুন
               </Link>
               <Link to="/auth/forgot-password?mode=admin" className="rounded-full bg-white px-3 py-1.5 text-slate-600 hover:bg-slate-100">
-                Reset password
+                পাসওয়ার্ড রিসেট করুন
               </Link>
             </div>
 
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
               <p className="inline-flex items-center gap-1 font-semibold">
                 <MailCheck size={14} />
-                Admin note
+                অ্যাডমিন নোট
               </p>
               <p className="mt-1">
-                শুধুমাত্র allowlisted email admin role পাবে। Example:{" "}
-                {isAllowlistedAdminEmail(adminForm.email) ? "আপনার email allowlisted." : "allowlisted email ব্যবহার করুন।"}
+                শুধুমাত্র অনুমোদিত ইমেইল থেকেই অ্যাডমিন ভূমিকা পাওয়া যাবে। {isAllowlistedAdminEmail(adminForm.email) ? "আপনার দেওয়া ইমেইলটি অনুমোদিত তালিকায় আছে।" : "অনুমোদিত ইমেইল ব্যবহার করুন।"}
               </p>
             </div>
 

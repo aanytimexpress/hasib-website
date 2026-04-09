@@ -1,4 +1,6 @@
-﻿interface FontSizeControlProps {
+﻿import { toBanglaNumber } from "../../lib/locale";
+
+interface FontSizeControlProps {
   size: number;
   onChange: (size: number) => void;
 }
@@ -13,7 +15,7 @@ export function FontSizeControl({ size, onChange }: FontSizeControlProps) {
       >
         অ-
       </button>
-      <span className="text-xs text-slate-500">{size}px</span>
+      <span className="text-xs text-slate-500">{toBanglaNumber(size)} পিক্সেল</span>
       <button
         type="button"
         onClick={() => onChange(Math.min(24, size + 1))}

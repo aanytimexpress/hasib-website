@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { Post } from "../../types/models";
 import { formatDate } from "../../lib/date";
+import { toBanglaNumber } from "../../lib/locale";
 
 interface PostCardProps {
   post: Post;
@@ -30,7 +31,7 @@ export function PostCard({ post }: PostCardProps) {
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-[#fff4ee] px-3 py-1 text-[#a44b21]">
             <Clock3 size={13} />
-            {post.reading_minutes || 1} min
+            {toBanglaNumber(post.reading_minutes || 1)} মিনিট
           </span>
         </div>
 

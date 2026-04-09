@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { Post } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { PostCard } from "../../components/public/PostCard";
+import { toBanglaNumber } from "../../lib/locale";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -84,7 +85,7 @@ export default function SearchPage() {
       <section className="section-card">
         <h2 className="font-display text-3xl text-brand-900">{query ? `“${query}” এর ফলাফল` : "সার্চ শুরু করুন"}</h2>
         <p className="mt-2 text-sm text-slate-600">
-          {query ? `${results.length}টি লেখা পাওয়া গেছে।` : "উপরে একটি শব্দ বা বাক্য লিখে সার্চ দিন।"}
+          {query ? `${toBanglaNumber(results.length)}টি লেখা পাওয়া গেছে।` : "উপরে একটি শব্দ বা বাক্য লিখে সার্চ দিন।"}
         </p>
       </section>
 

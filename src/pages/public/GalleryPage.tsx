@@ -2,6 +2,7 @@
 import { Images, X } from "lucide-react";
 import { GalleryCategory, GalleryItem } from "../../types/models";
 import { supabase } from "../../lib/supabase";
+import { toBanglaNumber } from "../../lib/locale";
 
 export default function GalleryPage() {
   const [categories, setCategories] = useState<GalleryCategory[]>([]);
@@ -40,7 +41,7 @@ export default function GalleryPage() {
           <div className="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-sm">
             <div className="inline-flex items-center gap-2 text-brand-800">
               <Images size={18} />
-              <span className="text-sm font-semibold">মোট ছবি: {filteredItems.length}</span>
+              <span className="text-sm font-semibold">মোট ছবি: {toBanglaNumber(filteredItems.length)}</span>
             </div>
             <p className="mt-3 text-sm leading-7 text-slate-600">
               ক্যাটাগরি বেছে নিয়ে অ্যালবাম ঘুরে দেখুন, আর যেকোনো ছবিতে ক্লিক করলে বড় করে প্রিভিউ খুলবে।

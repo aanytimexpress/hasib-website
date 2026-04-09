@@ -1,4 +1,4 @@
-import { Session } from "@supabase/supabase-js";
+﻿import { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import { isAllowlistedAdminEmail } from "../constants/auth";
@@ -60,7 +60,7 @@ function toErrorMessage(error: unknown, fallback: string): string {
 async function ensureCurrentUserProfile(session: Session): Promise<{ error?: string }> {
   const email = session.user.email?.trim().toLowerCase();
   if (!email) {
-    return { error: "Authenticated user email is missing." };
+    return { error: "লগইন করা ব্যবহারকারীর ইমেইল পাওয়া যায়নি।" };
   }
 
   const { error: rpcError } = await supabase.rpc("ensure_current_user_profile");
@@ -76,7 +76,7 @@ async function ensureCurrentUserProfile(session: Session): Promise<{ error?: str
     .maybeSingle();
 
   if (roleError || !roleData?.id) {
-    return { error: rpcError.message || roleError?.message || "Failed to resolve role." };
+    return { error: rpcError.message || roleError?.message || "ব্যবহারকারীর ভূমিকা ঠিক করা যায়নি।" };
   }
 
   const fullName =
@@ -157,10 +157,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return {};
       }
 
-      const errorMessage = signInResult.error.message || "Login failed.";
+      const errorMessage = signInResult.error.message || "লগইন করা যায়নি।";
       return { error: errorMessage };
     } catch (error) {
-      return { error: toErrorMessage(error, "Login failed. Please try again.") };
+      return { error: toErrorMessage(error, "লগইন করা যায়নি। আবার চেষ্টা করুন।") };
     }
   },
   signUp: async ({ email, password, fullName }, options) => {
@@ -185,10 +185,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (data.session) {
       await get().refreshProfile();
-      return { message: "Account created successfully. You are now signed in." };
+      return { message: "অ্যাকাউন্ট তৈরি হয়েছে এবং আপনি এখনই প্রবেশ করেছেন।" };
     }
 
-    return { message: "Account created. Check your email to verify, then sign in." };
+    return { message: "অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল ভেরিফাই করে তারপর প্রবেশ করুন।" };
   },
   resendSignupVerification: async (email, options) => {
     const defaultRedirect =
@@ -204,7 +204,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return { error: error.message };
     }
 
-    return { message: "Verification email sent again. Check inbox/spam." };
+    return { message: "ভেরিফিকেশন ইমেইল আবার পাঠানো হয়েছে। ইনবক্স বা স্প্যাম দেখুন।" };
   },
   requestPasswordReset: async (email, options) => {
     const defaultRedirect =
@@ -218,7 +218,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (error) {
       return { error: error.message };
     }
-    return { message: "Password reset link sent. Check your email inbox." };
+    return { message: "পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে। ইমেইল ইনবক্স দেখুন।" };
   },
   updatePassword: async (password) => {
     try {
@@ -229,7 +229,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await get().refreshProfile();
       return {};
     } catch (error) {
-      return { error: toErrorMessage(error, "Password update failed. Please try again.") };
+      return { error: toErrorMessage(error, "পাসওয়ার্ড হালনাগাদ করা যায়নি। আবার চেষ্টা করুন।") };
     }
   },
   repairProfile: async () => {
@@ -239,21 +239,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } = await supabase.auth.getSession();
 
       if (!session?.user) {
-        return { error: "No active session found. Please sign in again." };
+        return { error: "সক্রিয় সেশন পাওয়া যায়নি। আবার লগইন করুন।" };
       }
 
       const repair = await ensureCurrentUserProfile(session);
       await get().refreshProfile();
       const currentRole = get().role;
       if (currentRole) {
-        return { message: `Role synced successfully: ${currentRole}.` };
+        return { message: `ভূমিকা সফলভাবে সমন্বয় হয়েছে: ${currentRole}.` };
       }
       if (repair.error) {
         return { error: repair.error };
       }
-      return { error: "Profile is still missing. Run SQL patch once, then sign in again." };
+      return { error: "প্রোফাইল এখনো পাওয়া যায়নি। SQL patch চালিয়ে আবার লগইন করুন।" };
     } catch (error) {
-      return { error: toErrorMessage(error, "Could not sync profile right now.") };
+      return { error: toErrorMessage(error, "এই মুহূর্তে প্রোফাইল সমন্বয় করা যাচ্ছে না।") };
     }
   },
   signOut: async () => {

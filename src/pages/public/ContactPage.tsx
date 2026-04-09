@@ -1,11 +1,11 @@
-import { FormEvent, useEffect, useState } from "react";
+﻿import { FormEvent, useEffect, useState } from "react";
 import { Mail, Phone, SendHorizontal, MessageSquareHeart } from "lucide-react";
 import { PageRecord, SiteSetting, SocialLink } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { sanitizeHtml } from "../../lib/sanitize";
 
 const FALLBACK_CONTACT_HTML =
-  "<p>যোগাযোগের জন্য নিচের ফর্ম ব্যবহার করুন। আপনি পরামর্শ, মতামত বা ব্যক্তিগত কোনো বার্তা পাঠাতে পারেন।</p>";
+  "<p>যোগাযোগের জন্য নিচের ফর্ম ব্যবহার করুন। আপনি মতামত, পরামর্শ বা ব্যক্তিগত কোনো বার্তা পাঠাতে পারেন।</p>";
 
 type FormStatus = {
   type: "success" | "error";
@@ -51,20 +51,20 @@ export default function ContactPage() {
     setSubmitting(false);
 
     if (error) {
-      setStatus({ type: "error", message: error.message });
+      setStatus({ type: "error", message: "বার্তা পাঠানো যায়নি। একটু পরে আবার চেষ্টা করুন।" });
       return;
     }
-    setStatus({ type: "success", message: "আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ।" });
+    setStatus({ type: "success", message: "আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে। আন্তরিক ধন্যবাদ।" });
     setForm({ name: "", email: "", message: "" });
   };
 
   const contactEmail = settings.find((item) => item.key === "contact_email")?.value || "author@example.com";
-  const contactPhone = settings.find((item) => item.key === "contact_phone")?.value || "-";
+  const contactPhone = settings.find((item) => item.key === "contact_phone")?.value || "উল্লেখ করা হয়নি";
 
   if (loading) {
     return (
       <div className="rounded-[28px] border border-white/70 bg-white/70 p-10 text-center shadow-panel backdrop-blur-xl">
-        <p className="text-base text-slate-600">Contact section লোড হচ্ছে...</p>
+        <p className="text-base text-slate-600">যোগাযোগের অংশ প্রস্তুত করা হচ্ছে...</p>
       </div>
     );
   }
@@ -143,12 +143,12 @@ export default function ContactPage() {
         </section>
 
         <aside className="space-y-4 rounded-[26px] border border-white/70 bg-white/72 p-5 shadow-[0_16px_40px_rgba(33,74,141,0.13)] backdrop-blur-xl md:p-6">
-          <h2 className="text-xl font-semibold text-slate-900">Contact Info</h2>
+          <h2 className="text-xl font-semibold text-slate-900">যোগাযোগের ঠিকানা</h2>
 
           <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-4">
             <p className="mb-1 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
               <Mail size={16} className="text-brand-700" />
-              Email
+              ইমেইল
             </p>
             <p className="text-sm text-slate-700">{contactEmail}</p>
           </article>
@@ -156,13 +156,13 @@ export default function ContactPage() {
           <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-4">
             <p className="mb-1 inline-flex items-center gap-2 text-sm font-semibold text-slate-800">
               <Phone size={16} className="text-brand-700" />
-              Phone
+              ফোন
             </p>
             <p className="text-sm text-slate-700">{contactPhone}</p>
           </article>
 
           <article className="rounded-2xl border border-slate-200/80 bg-white/85 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-slate-800">Social Links</h3>
+            <h3 className="mb-2 text-sm font-semibold text-slate-800">সামাজিক মাধ্যম</h3>
             <div className="flex flex-wrap gap-2">
               {socials.map((item) => (
                 <a

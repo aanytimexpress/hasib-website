@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Mail, RefreshCw } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -8,7 +8,7 @@ import { supabase } from "../../lib/supabase";
 function normalizeError(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
-  return "Verification could not be completed.";
+  return "ইমেইল যাচাইকরণ সম্পন্ন করা যায়নি।";
 }
 
 export default function VerifyEmailPage() {
@@ -20,7 +20,7 @@ export default function VerifyEmailPage() {
   const emailFromQuery = (searchParams.get("email") || "").trim().toLowerCase();
 
   const [status, setStatus] = useState<"idle" | "verifying" | "verified" | "error">("idle");
-  const [message, setMessage] = useState("Check your inbox and click the verification link.");
+  const [message, setMessage] = useState("ইনবক্স খুলে ভেরিফিকেশন লিংকে ক্লিক করুন।");
   const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function VerifyEmailPage() {
 
     const runVerification = async () => {
       setStatus("verifying");
-      setMessage("Validating verification link...");
+      setMessage("ভেরিফিকেশন লিংক যাচাই করা হচ্ছে...");
 
       try {
         const query = new URLSearchParams(window.location.search);
@@ -48,13 +48,13 @@ export default function VerifyEmailPage() {
           if (error) throw error;
         } else {
           setStatus("idle");
-          setMessage("Verification link is not opened yet. Please open the email link first.");
+          setMessage("ইমেইল লিংকটি এখনো খোলা হয়নি। ইনবক্স থেকে লিংকে ক্লিক করুন।");
           return;
         }
 
         if (!cancelled) {
           setStatus("verified");
-          setMessage("Email verified successfully. You can now continue.");
+          setMessage("ইমেইল সফলভাবে ভেরিফাই হয়েছে। এখন আপনি এগিয়ে যেতে পারেন।");
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       } catch (error) {
@@ -75,7 +75,7 @@ export default function VerifyEmailPage() {
     const email = emailFromQuery || session?.user?.email || "";
     if (!email) {
       setStatus("error");
-      setMessage("Email not found. Please go to signup and try again.");
+      setMessage("ইমেইল ঠিকানা পাওয়া যায়নি। আবার সাইনআপ করে চেষ্টা করুন।");
       return;
     }
     setResendLoading(true);
@@ -90,7 +90,7 @@ export default function VerifyEmailPage() {
     }
 
     setStatus("idle");
-    setMessage(result.message || "Verification email sent again.");
+    setMessage(result.message || "ভেরিফিকেশন ইমেইল আবার পাঠানো হয়েছে।");
   };
 
   const continueTarget = session && role ? (isAdminRole(role) ? "/admin" : "/account") : `/auth?mode=${mode}`;
@@ -101,7 +101,7 @@ export default function VerifyEmailPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">
           {status === "verified" ? <CheckCircle2 size={26} /> : <Mail size={24} />}
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">Email Verification</h1>
+        <h1 className="text-3xl font-bold text-slate-900">ইমেইল যাচাইকরণ</h1>
         <p className="mt-3 text-sm leading-7 text-slate-600">{message}</p>
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -112,13 +112,13 @@ export default function VerifyEmailPage() {
             className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70"
           >
             <RefreshCw size={15} />
-            {resendLoading ? "Sending..." : "Resend verification"}
+            {resendLoading ? "পাঠানো হচ্ছে..." : "ইমেইল আবার পাঠান"}
           </button>
           <Link
             to={continueTarget}
             className="rounded-full bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800"
           >
-            Continue
+            এগিয়ে যান
           </Link>
         </div>
       </div>

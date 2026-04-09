@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { X, Search, Filter } from "lucide-react";
 import { PostCard } from "../../components/public/PostCard";
 import { usePosts } from "../../hooks/usePosts";
 import { Category, Tag } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { useSearchParams } from "react-router-dom";
+import { toBanglaNumber } from "../../lib/locale";
 
 const PAGE_SIZE = 9;
 
@@ -75,7 +76,7 @@ export default function BlogPage() {
           </p>
           <h1 className="mt-3 text-balance text-3xl font-bold text-slate-900 md:text-5xl">ব্লগ ও স্মৃতির খাতা</h1>
           <p className="mt-3 text-base leading-8 text-slate-700 md:text-lg">
-            জীবন, স্মৃতি, অনুভূতি ও ব্যক্তিগত ভাবনার লেখাগুলো ক্যাটাগরি, ট্যাগ এবং সার্চ দিয়ে খুঁজে নিন।
+            জীবনের গল্প, স্মৃতি, অনুভূতি আর ব্যক্তিগত ভাবনার লেখাগুলো বিভাগ, ট্যাগ এবং সার্চ দিয়ে খুঁজে নিন।
           </p>
         </div>
       </section>
@@ -92,7 +93,7 @@ export default function BlogPage() {
               onClick={clearAllFilters}
               className="rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
             >
-              সব ক্লিয়ার
+              সব মুছুন
             </button>
           ) : null}
         </div>
@@ -105,7 +106,7 @@ export default function BlogPage() {
               updateParams({ category: event.target.value || null, page: "1" });
             }}
           >
-            <option value="">সব ক্যাটাগরি</option>
+            <option value="">সব বিভাগ</option>
             {categories.map((item) => (
               <option key={item.id} value={item.slug}>
                 {item.name}
@@ -132,7 +133,7 @@ export default function BlogPage() {
             <Search size={16} className="pointer-events-none absolute left-3 text-slate-400" />
             <input
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-10 text-sm outline-none transition focus:border-brand-500"
-              placeholder="ব্লগে সার্চ করুন..."
+              placeholder="কোনো লেখা, বিষয় বা শব্দ খুঁজুন..."
               value={query}
               onChange={(event) => {
                 updateParams({ q: event.target.value || null, page: "1" });
@@ -143,7 +144,7 @@ export default function BlogPage() {
                 type="button"
                 onClick={() => updateParams({ q: null, page: "1" })}
                 className="absolute right-2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Clear search"
+                aria-label="সার্চ মুছুন"
               >
                 <X size={14} />
               </button>
@@ -159,7 +160,7 @@ export default function BlogPage() {
                 onClick={() => updateParams({ category: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
               >
-                Category: {categorySlug} <X size={14} />
+                বিভাগ: {categorySlug} <X size={14} />
               </button>
             ) : null}
             {tagSlug ? (
@@ -168,7 +169,7 @@ export default function BlogPage() {
                 onClick={() => updateParams({ tag: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
               >
-                Tag: {tagSlug} <X size={14} />
+                ট্যাগ: {tagSlug} <X size={14} />
               </button>
             ) : null}
             {query ? (
@@ -177,7 +178,7 @@ export default function BlogPage() {
                 onClick={() => updateParams({ q: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
               >
-                Search: {query} <X size={14} />
+                খোঁজ: {query} <X size={14} />
               </button>
             ) : null}
           </div>
@@ -186,28 +187,28 @@ export default function BlogPage() {
 
       {loading ? (
         <div className="rounded-[24px] border border-white/70 bg-white/72 p-10 text-center shadow-panel backdrop-blur-xl">
-          <p className="text-base text-slate-600">পোস্ট লোড হচ্ছে...</p>
+          <p className="text-base text-slate-600">লেখাগুলো আনা হচ্ছে...</p>
         </div>
       ) : posts.length === 0 ? (
         <div className="rounded-[24px] border border-white/70 bg-white/72 p-10 text-center shadow-panel backdrop-blur-xl">
-          <h3 className="text-xl font-semibold text-slate-900">কোনো পোস্ট পাওয়া যায়নি</h3>
-          <p className="mt-2 text-sm text-slate-600">ফিল্টার বা সার্চ পরিবর্তন করে আবার চেষ্টা করুন।</p>
+          <h3 className="text-xl font-semibold text-slate-900">কোনো লেখা পাওয়া যায়নি</h3>
+          <p className="mt-2 text-sm text-slate-600">ফিল্টার বা সার্চ শব্দ বদলে আবার চেষ্টা করুন।</p>
           {hasFilters ? (
             <button
               type="button"
               onClick={clearAllFilters}
               className="mt-4 rounded-full bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
             >
-              সব ফিল্টার মুছুন
+              সব ফিল্টার সরান
             </button>
           ) : null}
         </div>
       ) : (
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-slate-900">মোট পোস্ট: {total}</h2>
+            <h2 className="text-xl font-semibold text-slate-900">মোট লেখা: {toBanglaNumber(total)}</h2>
             <p className="text-sm text-slate-500">
-              পেজ {page} / {totalPages}
+              পৃষ্ঠা {toBanglaNumber(page)} / {toBanglaNumber(totalPages)}
             </p>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -225,10 +226,10 @@ export default function BlogPage() {
           onClick={() => updateParams({ page: String(Math.max(1, page - 1)) })}
           className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
         >
-          Previous
+          আগের পৃষ্ঠা
         </button>
         <span className="rounded-full bg-white px-4 py-2 text-sm text-slate-600">
-          {page} / {totalPages}
+          {toBanglaNumber(page)} / {toBanglaNumber(totalPages)}
         </span>
         <button
           type="button"
@@ -236,7 +237,7 @@ export default function BlogPage() {
           onClick={() => updateParams({ page: String(Math.min(totalPages, page + 1)) })}
           className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
         >
-          Next
+          পরের পৃষ্ঠা
         </button>
       </div>
     </div>

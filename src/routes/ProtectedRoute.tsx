@@ -14,7 +14,7 @@ export function ProtectedRoute({ roles }: ProtectedRouteProps) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center font-bengali text-slate-700">
-        Loading admin panel...
+        অ্যাডমিন প্যানেল প্রস্তুত করা হচ্ছে...
       </div>
     );
   }

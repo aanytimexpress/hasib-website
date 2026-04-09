@@ -5,28 +5,29 @@ import { SiteSetting, SocialLink } from "../../types/models";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { isAdminRole } from "../../constants/roles";
+import { localizeStaticText } from "../../lib/locale";
 
 const navItems = [
-  { label: "Home", path: "/" },
-  { label: "About", path: "/about" },
-  { label: "Blog", path: "/blog" },
-  { label: "Memories", path: "/memories" },
-  { label: "Gallery", path: "/gallery" },
-  { label: "Timeline", path: "/timeline" },
-  { label: "Contact", path: "/contact" }
+  { label: "হোম", path: "/" },
+  { label: "পরিচিতি", path: "/about" },
+  { label: "লেখা", path: "/blog" },
+  { label: "স্মৃতি", path: "/memories" },
+  { label: "গ্যালারি", path: "/gallery" },
+  { label: "টাইমলাইন", path: "/timeline" },
+  { label: "যোগাযোগ", path: "/contact" }
 ];
 
 const footerLinks = [
-  { label: "Home", path: "/" },
-  { label: "About", path: "/about" },
-  { label: "Blog", path: "/blog" },
-  { label: "Gallery", path: "/gallery" },
-  { label: "Contact", path: "/contact" }
+  { label: "হোম", path: "/" },
+  { label: "পরিচিতি", path: "/about" },
+  { label: "লেখা", path: "/blog" },
+  { label: "গ্যালারি", path: "/gallery" },
+  { label: "যোগাযোগ", path: "/contact" }
 ];
 
 export function PublicLayout() {
-  const [siteTitle, setSiteTitle] = useState("Hasibur Rahman");
-  const [authorName, setAuthorName] = useState("Hasibur Rahman");
+  const [siteTitle, setSiteTitle] = useState("হাসিবুর রহমান");
+  const [authorName, setAuthorName] = useState("হাসিবুর রহমান");
   const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [socials, setSocials] = useState<SocialLink[]>([]);
   const { session, role } = useAuth();
@@ -57,9 +58,11 @@ export function PublicLayout() {
     void load();
   }, []);
 
+  const localizedSiteTitle = localizeStaticText(siteTitle) || siteTitle;
+  const localizedAuthorName = localizeStaticText(authorName) || authorName;
   const avatarSrc =
     authorAvatar ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f9dfd1&color=7a3c1f&size=160`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(localizedAuthorName)}&background=f9dfd1&color=7a3c1f&size=160`;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden font-bengali text-slate-800">
@@ -74,15 +77,15 @@ export function PublicLayout() {
             <Link to="/" className="flex items-center gap-3 rounded-full bg-white px-3 py-2 shadow-sm">
               <img
                 src={avatarSrc}
-                alt={authorName}
+                alt={localizedAuthorName}
                 loading="lazy"
                 className="h-10 w-10 rounded-full object-cover"
               />
               <div className="leading-tight">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#d67446]">
-                  Personal Journal
+                  ব্যক্তিগত জার্নাল
                 </p>
-                <p className="font-display text-lg text-brand-900 md:text-xl">{siteTitle}</p>
+                <p className="font-display text-lg text-brand-900 md:text-xl">{localizedSiteTitle}</p>
               </div>
             </Link>
 
@@ -108,7 +111,7 @@ export function PublicLayout() {
               <NavLink
                 to="/search"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:text-brand-900"
-                aria-label="Search"
+                aria-label="খুঁজুন"
               >
                 <Search size={18} />
               </NavLink>
@@ -123,7 +126,7 @@ export function PublicLayout() {
                       }`
                     }
                   >
-                    Account
+                    আমার ঘর
                   </NavLink>
                   {role && isAdminRole(role) ? (
                     <NavLink
@@ -134,7 +137,7 @@ export function PublicLayout() {
                         }`
                       }
                     >
-                      Admin
+                      অ্যাডমিন
                     </NavLink>
                   ) : null}
                 </>
@@ -147,7 +150,7 @@ export function PublicLayout() {
                     }`
                   }
                 >
-                  Sign in
+                  প্রবেশ
                 </NavLink>
               )}
             </div>
@@ -188,7 +191,7 @@ export function PublicLayout() {
               ))}
             </div>
 
-            <p className="text-sm text-slate-500">&copy; {siteTitle}</p>
+            <p className="text-sm text-slate-500">&copy; {localizedSiteTitle}</p>
           </div>
         </div>
       </footer>

@@ -1,9 +1,11 @@
-import { format } from "date-fns";
-
 export function formatDate(date?: string | null): string {
   if (!date) return "";
   try {
-    return format(new Date(date), "dd MMM yyyy");
+    return new Intl.DateTimeFormat("bn-BD", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(new Date(date));
   } catch {
     return date;
   }

@@ -13,7 +13,7 @@ export function AuthRequiredRoute({ roles }: AuthRequiredRouteProps) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center font-bengali text-slate-700">
-        Loading...
+        আপনার তথ্য যাচাই করা হচ্ছে...
       </div>
     );
   }
