@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { AdminCard } from "../../components/admin/AdminCard";
 import { ModuleHeader } from "../../components/admin/ModuleHeader";
-import { Post, Comment } from "../../types/models";
-import { supabase } from "../../lib/supabase";
 import { formatDate } from "../../lib/date";
+import { supabase } from "../../lib/supabase";
+import { Comment, Post } from "../../types/models";
 
 interface DashboardCounts {
   posts: number;
@@ -12,6 +12,24 @@ interface DashboardCounts {
   gallery: number;
   timeline: number;
   favorites: number;
+}
+
+const postStatusLabel: Record<string, string> = {
+  draft: "খসড়া",
+  scheduled: "নির্ধারিত",
+  published: "প্রকাশিত",
+  archived: "আর্কাইভ"
+};
+
+const commentStatusLabel: Record<string, string> = {
+  pending: "অপেক্ষমাণ",
+  approved: "অনুমোদিত",
+  spam: "স্প্যাম",
+  deleted: "মুছে ফেলা"
+};
+
+function formatCount(value: number) {
+  return new Intl.NumberFormat("bn-BD").format(value);
 }
 
 export default function DashboardPage() {
@@ -69,53 +87,66 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       <ModuleHeader
-        title="Dashboard Overview"
-        description="সাইটের সকল সেকশনের রিয়েল-টাইম কন্টেন্ট স্টেটাস।"
+        title="ড্যাশবোর্ড সংক্ষিপ্তচিত্র"
+        description="পোস্ট, পেজ, মন্তব্য এবং সাইটের গুরুত্বপূর্ণ অংশগুলোর বর্তমান অবস্থা এখানে এক নজরে দেখা যাচ্ছে।"
       />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {[
-          { label: "Total Posts", value: counts.posts },
-          { label: "Static Pages", value: counts.pages },
-          { label: "Pending Comments", value: counts.commentsPending },
-          { label: "Gallery Photos", value: counts.gallery },
-          { label: "Timeline Events", value: counts.timeline },
-          { label: "Favorites Items", value: counts.favorites }
+          { label: "মোট পোস্ট", value: counts.posts },
+          { label: "স্ট্যাটিক পেজ", value: counts.pages },
+          { label: "অপেক্ষমাণ মন্তব্য", value: counts.commentsPending },
+          { label: "গ্যালারি ছবি", value: counts.gallery },
+          { label: "টাইমলাইন ইভেন্ট", value: counts.timeline },
+          { label: "প্রিয়তালিকা আইটেম", value: counts.favorites }
         ].map((item) => (
-          <AdminCard key={item.label}>
-            <p className="text-sm text-slate-500">{item.label}</p>
-            <p className="text-3xl font-bold text-slate-900">{item.value}</p>
+          <AdminCard key={item.label} className="relative overflow-hidden">
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(248,205,184,0.38),transparent_68%)]" />
+            <p className="relative text-sm text-slate-500">{item.label}</p>
+            <p className="relative mt-3 text-4xl font-bold text-brand-900">{formatCount(item.value)}</p>
           </AdminCard>
         ))}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <AdminCard>
-          <h3 className="mb-3 text-lg font-semibold text-slate-900">Recent Posts</h3>
-          <div className="space-y-2">
-            {recentPosts.map((item) => (
-              <div key={item.id} className="rounded-lg border border-slate-200 p-3">
-                <p className="font-semibold text-slate-800">{item.title}</p>
-                <p className="text-xs text-slate-500">
-                  {item.status} • {formatDate(item.created_at)}
-                </p>
-              </div>
-            ))}
+          <h3 className="mb-4 text-xl font-semibold text-slate-900">সাম্প্রতিক পোস্ট</h3>
+          <div className="space-y-3">
+            {recentPosts.length ? (
+              recentPosts.map((item) => (
+                <div key={item.id} className="rounded-[22px] border border-brand-100/70 bg-[#fffaf6] p-4">
+                  <p className="font-semibold text-slate-800">{item.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {postStatusLabel[item.status] ?? item.status} • {formatDate(item.created_at)}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-[22px] border border-dashed border-brand-100 bg-[#fffaf6] p-4 text-sm text-slate-500">
+                এখনো কোনো পোস্ট যোগ করা হয়নি।
+              </p>
+            )}
           </div>
         </AdminCard>
 
         <AdminCard>
-          <h3 className="mb-3 text-lg font-semibold text-slate-900">Latest Comments</h3>
-          <div className="space-y-2">
-            {recentComments.map((item) => (
-              <div key={item.id} className="rounded-lg border border-slate-200 p-3">
-                <p className="font-semibold text-slate-800">{item.author_name}</p>
-                <p className="line-clamp-2 text-sm text-slate-600">{item.content}</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {item.status} • {formatDate(item.created_at)}
-                </p>
-              </div>
-            ))}
+          <h3 className="mb-4 text-xl font-semibold text-slate-900">সাম্প্রতিক মন্তব্য</h3>
+          <div className="space-y-3">
+            {recentComments.length ? (
+              recentComments.map((item) => (
+                <div key={item.id} className="rounded-[22px] border border-brand-100/70 bg-[#fffaf6] p-4">
+                  <p className="font-semibold text-slate-800">{item.author_name}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-slate-600">{item.content}</p>
+                  <p className="mt-2 text-xs text-slate-500">
+                    {commentStatusLabel[item.status] ?? item.status} • {formatDate(item.created_at)}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-[22px] border border-dashed border-brand-100 bg-[#fffaf6] p-4 text-sm text-slate-500">
+                এখনো কোনো মন্তব্য পাওয়া যায়নি।
+              </p>
+            )}
           </div>
         </AdminCard>
       </section>

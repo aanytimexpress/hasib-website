@@ -1,9 +1,9 @@
-import { Suspense, lazy } from "react";
+﻿import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { PublicLayout } from "../components/layout/PublicLayout";
 import { AdminLayout } from "../components/layout/AdminLayout";
-import { ProtectedRoute } from "./ProtectedRoute";
+import { PublicLayout } from "../components/layout/PublicLayout";
 import { AuthRequiredRoute } from "./AuthRequiredRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 const HomePage = lazy(() => import("../pages/public/HomePage"));
 const AboutPage = lazy(() => import("../pages/public/AboutPage"));
@@ -66,14 +66,8 @@ export function AppRoutes() {
 
         <Route path="/admin/login" element={<Navigate to="/auth?mode=admin" replace />} />
         <Route path="/admin/signup" element={<Navigate to="/auth/signup?mode=admin" replace />} />
-        <Route
-          path="/admin/reset-password"
-          element={<Navigate to="/auth/reset-password?mode=admin" replace />}
-        />
-        <Route
-          path="/admin/forgot-password"
-          element={<Navigate to="/auth/forgot-password?mode=admin" replace />}
-        />
+        <Route path="/admin/reset-password" element={<Navigate to="/auth/reset-password?mode=admin" replace />} />
+        <Route path="/admin/forgot-password" element={<Navigate to="/auth/forgot-password?mode=admin" replace />} />
 
         <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
           <Route element={<AdminLayout />}>
