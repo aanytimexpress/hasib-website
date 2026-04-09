@@ -18,8 +18,14 @@ function AuthRecoveryRedirect() {
         hash.get("access_token")
     );
 
-    if (type === "recovery" && hasRecoveryToken && location.pathname !== "/admin/reset-password") {
-      navigate(`/admin/reset-password${location.search}${location.hash}`, { replace: true });
+    if (type === "recovery" && hasRecoveryToken && location.pathname !== "/auth/reset-password") {
+      const params = new URLSearchParams(location.search);
+      if (!params.has("mode")) {
+        params.set("mode", "user");
+      }
+      const query = params.toString();
+      const target = `/auth/reset-password${query ? `?${query}` : ""}${location.hash}`;
+      navigate(target, { replace: true });
     }
   }, [location, navigate]);
 

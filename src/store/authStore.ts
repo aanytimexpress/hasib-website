@@ -4,6 +4,10 @@ import { supabase } from "../lib/supabase";
 import { isAllowlistedAdminEmail } from "../constants/auth";
 import { RoleName, UserProfile } from "../types/models";
 
+interface AuthRedirectOptions {
+  redirectTo?: string;
+}
+
 interface AuthState {
   loading: boolean;
   initialized: boolean;
@@ -13,10 +17,17 @@ interface AuthState {
   initialize: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string; message?: string }>;
   signUp: (
-    payload: { email: string; password: string; fullName: string }
+    payload: { email: string; password: string; fullName: string },
+    options?: AuthRedirectOptions
   ) => Promise<{ error?: string; message?: string }>;
-  resendSignupVerification: (email: string) => Promise<{ error?: string; message?: string }>;
-  requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
+  resendSignupVerification: (
+    email: string,
+    options?: AuthRedirectOptions
+  ) => Promise<{ error?: string; message?: string }>;
+  requestPasswordReset: (
+    email: string,
+    options?: AuthRedirectOptions
+  ) => Promise<{ error?: string; message?: string }>;
   updatePassword: (password: string) => Promise<{ error?: string }>;
   repairProfile: () => Promise<{ error?: string; message?: string }>;
   signOut: () => Promise<void>;
@@ -147,46 +158,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       const errorMessage = signInResult.error.message || "Login failed.";
-      const isInvalidCredentials =
-        errorMessage.toLowerCase().includes("invalid login credentials") ||
-        errorMessage.toLowerCase().includes("invalid credentials");
-
-      // For allowlisted admin emails, auto-provision first login to keep setup simple.
-      if (isAllowlistedAdminEmail(normalizedEmail) && isInvalidCredentials) {
-        const fullName = normalizedEmail.split("@")[0] || "Admin User";
-        const signUpResult = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            data: {
-              full_name: fullName
-            },
-            emailRedirectTo:
-              typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined
-          }
-        });
-
-        if (signUpResult.error) {
-          return { error: signUpResult.error.message };
-        }
-
-        const retrySignIn = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-        if (retrySignIn.error) {
-          return { error: retrySignIn.error.message };
-        }
-
-        await get().refreshProfile();
-        return { message: "Admin account created and signed in." };
-      }
-
       return { error: errorMessage };
     } catch (error) {
       return { error: toErrorMessage(error, "Login failed. Please try again.") };
     }
   },
-  signUp: async ({ email, password, fullName }) => {
-    const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined;
+  signUp: async ({ email, password, fullName }, options) => {
+    const defaultRedirect =
+      typeof window !== "undefined" ? `${window.location.origin}/auth/verify-email` : undefined;
+    const redirectTo = options?.redirectTo || defaultRedirect;
     const normalizedEmail = email.trim().toLowerCase();
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
@@ -210,9 +190,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     return { message: "Account created. Check your email to verify, then sign in." };
   },
-  resendSignupVerification: async (email) => {
-    const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/admin/login` : undefined;
+  resendSignupVerification: async (email, options) => {
+    const defaultRedirect =
+      typeof window !== "undefined" ? `${window.location.origin}/auth/verify-email` : undefined;
+    const redirectTo = options?.redirectTo || defaultRedirect;
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
@@ -225,9 +206,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     return { message: "Verification email sent again. Check inbox/spam." };
   },
-  requestPasswordReset: async (email) => {
-    const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/admin/reset-password` : undefined;
+  requestPasswordReset: async (email, options) => {
+    const defaultRedirect =
+      typeof window !== "undefined" ? `${window.location.origin}/auth/reset-password` : undefined;
+    const redirectTo = options?.redirectTo || defaultRedirect;
     const normalizedEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.resetPasswordForEmail(
       normalizedEmail,

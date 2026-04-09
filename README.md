@@ -99,6 +99,22 @@ Production-ready Bengali personal publishing CMS with a dynamic public site and 
 - HTML sanitization for rendered content
 - Storage policies locked to editor/admin roles for write actions
 
+### Authentication Flows
+
+- Unified auth portal: `/auth`
+  - User flow: `/auth?mode=user`
+  - Admin flow: `/auth?mode=admin`
+- Signup:
+  - User: `/auth/signup?mode=user`
+  - Admin (allowlisted emails only): `/auth/signup?mode=admin`
+- Email verification: `/auth/verify-email`
+- Forgot password: `/auth/forgot-password?mode=user|admin`
+- Reset password callback: `/auth/reset-password`
+- Backward compatible redirects:
+  - `/admin/login` -> `/auth?mode=admin`
+  - `/admin/signup` -> `/auth/signup?mode=admin`
+  - `/admin/reset-password` -> `/auth/reset-password?mode=admin`
+
 ### Performance
 
 - Lazy-loaded routes and images
@@ -299,6 +315,7 @@ If OpenAI is unavailable, the app uses local fallback logic.
 ## Admin Auth Troubleshooting
 
 - Login/Signup/Reset needs valid `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- If env vars are missing, app starts in demo mode for UI preview only and real auth will not work.
 - In Vercel (or other host), set all `VITE_*` variables for Production and Preview.
 - Admin email allowlist is enforced in DB trigger:
   - `aanytime.xpress@gmail.com`
@@ -307,10 +324,10 @@ If OpenAI is unavailable, the app uses local fallback logic.
 - In Supabase Auth URL Configuration:
   - `Site URL`: your production frontend URL
   - Add redirect URLs:
-    - `https://your-domain.com/admin/login`
-    - `https://your-domain.com/admin/reset-password`
-    - `https://*.vercel.app/admin/login`
-    - `https://*.vercel.app/admin/reset-password`
+    - `https://your-domain.com/auth/verify-email`
+    - `https://your-domain.com/auth/reset-password`
+    - `https://*.vercel.app/auth/verify-email`
+    - `https://*.vercel.app/auth/reset-password`
 - If signup is disabled in Supabase, `/admin/signup` will fail by design; enable signup for normal-user registration.
 - First super admin setup:
   - Create first Auth user manually in Supabase

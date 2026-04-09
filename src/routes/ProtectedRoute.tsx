@@ -20,14 +20,14 @@ export function ProtectedRoute({ roles }: ProtectedRouteProps) {
   }
 
   if (!session) {
-    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/auth?mode=admin" replace state={{ from: location.pathname }} />;
   }
 
   if (roles && roles.length > 0 && !hasAnyRole(role, roles)) {
     if (role) {
       return <Navigate to="/" replace />;
     }
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/auth?mode=admin" replace />;
   }
 
   return <Outlet />;

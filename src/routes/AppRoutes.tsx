@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { PublicLayout } from "../components/layout/PublicLayout";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { AuthRequiredRoute } from "./AuthRequiredRoute";
 
 const HomePage = lazy(() => import("../pages/public/HomePage"));
 const AboutPage = lazy(() => import("../pages/public/AboutPage"));
@@ -13,10 +14,13 @@ const GalleryPage = lazy(() => import("../pages/public/GalleryPage"));
 const TimelinePage = lazy(() => import("../pages/public/TimelinePage"));
 const ContactPage = lazy(() => import("../pages/public/ContactPage"));
 const SearchPage = lazy(() => import("../pages/public/SearchPage"));
+const AccountPage = lazy(() => import("../pages/public/AccountPage"));
 
-const AdminLoginPage = lazy(() => import("../pages/admin/AdminLoginPage"));
-const AdminSignupPage = lazy(() => import("../pages/admin/AdminSignupPage"));
-const ResetPasswordPage = lazy(() => import("../pages/admin/ResetPasswordPage"));
+const AuthPortalPage = lazy(() => import("../pages/auth/AuthPortalPage"));
+const AuthSignupPage = lazy(() => import("../pages/auth/AuthSignupPage"));
+const VerifyEmailPage = lazy(() => import("../pages/auth/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("../pages/auth/ForgotPasswordPage"));
+const AuthResetPasswordPage = lazy(() => import("../pages/auth/AuthResetPasswordPage"));
 const DashboardPage = lazy(() => import("../pages/admin/DashboardPage"));
 const PostsPage = lazy(() => import("../pages/admin/PostsPage"));
 const PagesPage = lazy(() => import("../pages/admin/PagesPage"));
@@ -43,49 +47,68 @@ export function AppRoutes() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/memories" element={<TimelinePage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/search" element={<SearchPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route path="/admin/signup" element={<AdminSignupPage />} />
-          <Route path="/admin/reset-password" element={<ResetPasswordPage />} />
-          <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<DashboardPage />} />
-            </Route>
+          <Route element={<AuthRequiredRoute />}>
+            <Route path="account" element={<AccountPage />} />
           </Route>
+        </Route>
 
-          <Route element={<ProtectedRoute roles={["super_admin", "editor"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/posts" element={<PostsPage />} />
-            </Route>
+        <Route path="/auth" element={<AuthPortalPage />} />
+        <Route path="/auth/signup" element={<AuthSignupPage />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset-password" element={<AuthResetPasswordPage />} />
+
+        <Route path="/admin/login" element={<Navigate to="/auth?mode=admin" replace />} />
+        <Route path="/admin/signup" element={<Navigate to="/auth/signup?mode=admin" replace />} />
+        <Route
+          path="/admin/reset-password"
+          element={<Navigate to="/auth/reset-password?mode=admin" replace />}
+        />
+        <Route
+          path="/admin/forgot-password"
+          element={<Navigate to="/auth/forgot-password?mode=admin" replace />}
+        />
+
+        <Route element={<ProtectedRoute roles={["super_admin", "editor", "moderator"]} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<DashboardPage />} />
           </Route>
+        </Route>
 
-          <Route element={<ProtectedRoute roles={["super_admin"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/pages" element={<PagesPage />} />
-              <Route path="/admin/gallery" element={<GalleryManagerPage />} />
-              <Route path="/admin/timeline" element={<TimelineManagerPage />} />
-              <Route path="/admin/favorites" element={<FavoritesManagerPage />} />
-              <Route path="/admin/media" element={<MediaManagerPage />} />
-              <Route path="/admin/menu" element={<MenuManagerPage />} />
-              <Route path="/admin/settings" element={<SettingsPage />} />
-              <Route path="/admin/seo" element={<SeoPage />} />
-            </Route>
+        <Route element={<ProtectedRoute roles={["super_admin", "editor"]} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/posts" element={<PostsPage />} />
           </Route>
+        </Route>
 
-          <Route element={<ProtectedRoute roles={["super_admin", "moderator"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/comments" element={<CommentsManagerPage />} />
-            </Route>
+        <Route element={<ProtectedRoute roles={["super_admin"]} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/pages" element={<PagesPage />} />
+            <Route path="/admin/gallery" element={<GalleryManagerPage />} />
+            <Route path="/admin/timeline" element={<TimelineManagerPage />} />
+            <Route path="/admin/favorites" element={<FavoritesManagerPage />} />
+            <Route path="/admin/media" element={<MediaManagerPage />} />
+            <Route path="/admin/menu" element={<MenuManagerPage />} />
+            <Route path="/admin/settings" element={<SettingsPage />} />
+            <Route path="/admin/seo" element={<SeoPage />} />
           </Route>
+        </Route>
 
-          <Route element={<ProtectedRoute roles={["super_admin"]} />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/admin/users" element={<UsersPage />} />
-            </Route>
+        <Route element={<ProtectedRoute roles={["super_admin", "moderator"]} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/comments" element={<CommentsManagerPage />} />
+          </Route>
+        </Route>
+
+        <Route element={<ProtectedRoute roles={["super_admin"]} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/users" element={<UsersPage />} />
           </Route>
         </Route>
 

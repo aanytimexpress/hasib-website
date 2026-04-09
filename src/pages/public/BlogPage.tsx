@@ -1,12 +1,18 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, Filter, Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { X, Search, Filter } from "lucide-react";
 import { PostCard } from "../../components/public/PostCard";
 import { usePosts } from "../../hooks/usePosts";
 import { Category, Tag } from "../../types/models";
 import { supabase } from "../../lib/supabase";
+import { useSearchParams } from "react-router-dom";
 
 const PAGE_SIZE = 9;
+
+function toValidPage(value: string | null): number {
+  const parsed = Number(value || "1");
+  if (!Number.isFinite(parsed) || parsed < 1) return 1;
+  return Math.floor(parsed);
+}
 
 export default function BlogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +22,7 @@ export default function BlogPage() {
   const categorySlug = searchParams.get("category") || "";
   const tagSlug = searchParams.get("tag") || "";
   const query = searchParams.get("q") || "";
-  const page = Number(searchParams.get("page") || 1);
+  const page = toValidPage(searchParams.get("page"));
 
   const { posts, total, loading } = usePosts({
     page,
@@ -39,67 +45,66 @@ export default function BlogPage() {
   }, []);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
-  const activeFilterCount = [categorySlug, tagSlug, query].filter(Boolean).length;
+  const hasFilters = Boolean(categorySlug || tagSlug || query);
 
-  const updateFilterParam = (key: string, value: string) => {
-    const next = new URLSearchParams(searchParams);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    next.set("page", "1");
+  const updateParams = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value.trim()) {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+    });
+    if (!next.get("page")) {
+      next.set("page", "1");
+    }
     setSearchParams(next);
   };
 
-  const goToPage = (nextPage: number) => {
-    const next = new URLSearchParams(searchParams);
-    next.set("page", String(nextPage));
-    setSearchParams(next);
-  };
-
-  const clearFilters = () => {
-    setSearchParams(new URLSearchParams());
+  const clearAllFilters = () => {
+    setSearchParams(new URLSearchParams({ page: "1" }));
   };
 
   return (
-    <div className="page-shell">
-      <section className="page-hero">
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-          <div className="space-y-4">
-            <p className="section-kicker">লেখার ঘর</p>
-            <h1 className="section-title">ভাবনা, স্মৃতি আর দিনের নোট</h1>
-            <p className="max-w-2xl text-base leading-8 text-slate-700">
-              সব লেখাকে এমনভাবে সাজানো হয়েছে যাতে তুমি সহজে বিষয়, অনুভূতি বা শব্দ ধরে নিজের মতো করে পড়তে পারো।
-            </p>
-          </div>
-          <div className="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-sm">
-            <p className="text-sm leading-7 text-slate-600">
-              মোট <span className="font-semibold text-brand-900">{total}</span>টি লেখা পাওয়া গেছে
-              {activeFilterCount ? `, ${activeFilterCount}টি filter সক্রিয় আছে।` : "।"}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {categorySlug ? <span className="section-kicker">ক্যাটাগরি: {categorySlug}</span> : null}
-              {tagSlug ? <span className="section-kicker">ট্যাগ: {tagSlug}</span> : null}
-              {query ? <span className="section-kicker">খোঁজ: {query}</span> : null}
-            </div>
-          </div>
+    <div className="space-y-6 md:space-y-8">
+      <section className="rounded-[32px] border border-white/70 bg-gradient-to-br from-white/85 via-sky-50/80 to-blue-100/70 p-7 shadow-[0_24px_70px_rgba(53,88,144,0.18)] backdrop-blur-xl md:p-10">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="inline-flex rounded-full bg-white/90 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">
+            বাংলা জার্নাল আর্কাইভ
+          </p>
+          <h1 className="mt-3 text-balance text-3xl font-bold text-slate-900 md:text-5xl">ব্লগ ও স্মৃতির খাতা</h1>
+          <p className="mt-3 text-base leading-8 text-slate-700 md:text-lg">
+            জীবন, স্মৃতি, অনুভূতি ও ব্যক্তিগত ভাবনার লেখাগুলো ক্যাটাগরি, ট্যাগ এবং সার্চ দিয়ে খুঁজে নিন।
+          </p>
         </div>
       </section>
 
-      <section className="section-card space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-2 text-brand-800">
-            <Filter size={18} />
-            <span className="text-sm font-semibold uppercase tracking-[0.22em]">ফিল্টার</span>
-          </div>
-          {activeFilterCount ? (
-            <button type="button" onClick={clearFilters} className="ghost-button gap-2">
-              <X size={16} />
-              সব মুছুন
+      <section className="rounded-[26px] border border-white/70 bg-white/72 p-5 shadow-[0_16px_40px_rgba(33,74,141,0.13)] backdrop-blur-xl md:p-6">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <h2 className="inline-flex items-center gap-2 text-xl font-semibold text-slate-900">
+            <Filter size={18} className="text-brand-700" />
+            ফিল্টার ও সার্চ
+          </h2>
+          {hasFilters ? (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+            >
+              সব ক্লিয়ার
             </button>
           ) : null}
         </div>
 
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_2fr]">
-          <select className="soft-input" value={categorySlug} onChange={(event) => updateFilterParam("category", event.target.value)}>
+          <select
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-500"
+            value={categorySlug}
+            onChange={(event) => {
+              updateParams({ category: event.target.value || null, page: "1" });
+            }}
+          >
             <option value="">সব ক্যাটাগরি</option>
             {categories.map((item) => (
               <option key={item.id} value={item.slug}>
@@ -108,7 +113,13 @@ export default function BlogPage() {
             ))}
           </select>
 
-          <select className="soft-input" value={tagSlug} onChange={(event) => updateFilterParam("tag", event.target.value)}>
+          <select
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-brand-500"
+            value={tagSlug}
+            onChange={(event) => {
+              updateParams({ tag: event.target.value || null, page: "1" });
+            }}
+          >
             <option value="">সব ট্যাগ</option>
             {tags.map((item) => (
               <option key={item.id} value={item.slug}>
@@ -117,77 +128,117 @@ export default function BlogPage() {
             ))}
           </select>
 
-          <label className="relative block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <label className="relative flex items-center">
+            <Search size={16} className="pointer-events-none absolute left-3 text-slate-400" />
             <input
-              className="soft-input pl-11"
-              placeholder="শিরোনাম, ভাবনা বা কীওয়ার্ড লিখে খুঁজুন..."
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-10 text-sm outline-none transition focus:border-brand-500"
+              placeholder="ব্লগে সার্চ করুন..."
               value={query}
-              onChange={(event) => updateFilterParam("q", event.target.value)}
+              onChange={(event) => {
+                updateParams({ q: event.target.value || null, page: "1" });
+              }}
             />
+            {query ? (
+              <button
+                type="button"
+                onClick={() => updateParams({ q: null, page: "1" })}
+                className="absolute right-2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            ) : null}
           </label>
         </div>
+
+        {hasFilters ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            {categorySlug ? (
+              <button
+                type="button"
+                onClick={() => updateParams({ category: null, page: "1" })}
+                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
+              >
+                Category: {categorySlug} <X size={14} />
+              </button>
+            ) : null}
+            {tagSlug ? (
+              <button
+                type="button"
+                onClick={() => updateParams({ tag: null, page: "1" })}
+                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
+              >
+                Tag: {tagSlug} <X size={14} />
+              </button>
+            ) : null}
+            {query ? (
+              <button
+                type="button"
+                onClick={() => updateParams({ q: null, page: "1" })}
+                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-700"
+              >
+                Search: {query} <X size={14} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {loading ? (
-        <p className="section-card text-center text-slate-600">লেখাগুলো আনা হচ্ছে...</p>
-      ) : posts.length ? (
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </section>
-      ) : (
-        <section className="section-card text-center">
-          <h2 className="font-display text-3xl text-brand-900">এই ফিল্টারে কোনো লেখা পাওয়া যায়নি</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
-            অন্য ক্যাটাগরি, ট্যাগ বা শব্দ দিয়ে আবার চেষ্টা করতে পারো।
-          </p>
-          <div className="mt-5">
-            <button type="button" onClick={clearFilters} className="soft-button">
-              সব লেখা দেখুন
+        <div className="rounded-[24px] border border-white/70 bg-white/72 p-10 text-center shadow-panel backdrop-blur-xl">
+          <p className="text-base text-slate-600">পোস্ট লোড হচ্ছে...</p>
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="rounded-[24px] border border-white/70 bg-white/72 p-10 text-center shadow-panel backdrop-blur-xl">
+          <h3 className="text-xl font-semibold text-slate-900">কোনো পোস্ট পাওয়া যায়নি</h3>
+          <p className="mt-2 text-sm text-slate-600">ফিল্টার বা সার্চ পরিবর্তন করে আবার চেষ্টা করুন।</p>
+          {hasFilters ? (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="mt-4 rounded-full bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
+            >
+              সব ফিল্টার মুছুন
             </button>
+          ) : null}
+        </div>
+      ) : (
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-slate-900">মোট পোস্ট: {total}</h2>
+            <p className="text-sm text-slate-500">
+              পেজ {page} / {totalPages}
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
           </div>
         </section>
       )}
 
-      <section className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex items-center justify-center gap-2">
         <button
           type="button"
           disabled={page <= 1}
-          onClick={() => goToPage(Math.max(1, page - 1))}
-          className="ghost-button disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={() => updateParams({ page: String(Math.max(1, page - 1)) })}
+          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
         >
-          আগের পাতা
+          Previous
         </button>
-        <span className="rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm text-slate-600">
-          পাতা {page} / {totalPages}
+        <span className="rounded-full bg-white px-4 py-2 text-sm text-slate-600">
+          {page} / {totalPages}
         </span>
         <button
           type="button"
           disabled={page >= totalPages}
-          onClick={() => goToPage(Math.min(totalPages, page + 1))}
-          className="soft-button disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={() => updateParams({ page: String(Math.min(totalPages, page + 1)) })}
+          className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
         >
-          পরের পাতা
+          Next
         </button>
-      </section>
-
-      <section className="section-card flex flex-wrap items-center justify-between gap-4 bg-[linear-gradient(120deg,rgba(25,59,112,0.06),rgba(171,87,40,0.1),rgba(255,255,255,0.7))]">
-        <div>
-          <p className="section-kicker">আরও পড়ুন</p>
-          <h2 className="mt-3 font-display text-3xl text-brand-900">স্মৃতি, ছবি আর ব্যক্তিগত পছন্দও ঘুরে দেখুন</h2>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Link to="/favorites" className="ghost-button">
-            প্রিয় জিনিস
-          </Link>
-          <Link to="/gallery" className="soft-button gap-2">
-            গ্যালারি
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
